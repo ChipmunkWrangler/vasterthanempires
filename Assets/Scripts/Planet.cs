@@ -33,7 +33,7 @@ public class Planet : MonoBehaviour {
 
 	void OnMouseUpAsButton() {
 		if (player.selected) {
-			player.MoveTo (transform);
+			player.SetTargetPlanet (transform);
 		}
 	}
 
