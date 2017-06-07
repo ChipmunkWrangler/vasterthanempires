@@ -14,8 +14,8 @@ public class Planet : MonoBehaviour {
 	[SerializeField] float secsPerDisplayUpdate = 1f;
 	[SerializeField] float infoSpeedUnitsPerSec = 0.5f;
 	[SerializeField] float maxDist = 8f;
-	[SerializeField] Player localPlayer;
 
+	Player localPlayer;
 //	List<ResourceEvent> resourceEvents;
 	float initialTime;
 	Material material;
@@ -27,7 +27,7 @@ public class Planet : MonoBehaviour {
 		originalColor = conquerorColor;
 	}
 
-	void Start () {
+	void Start () {		
 		material = GetComponent<MeshRenderer> ().material;
 		initialTime = Time.time;
 		resourceDisplay.transform.position = Camera.main.WorldToScreenPoint (transform.position);
@@ -37,8 +37,8 @@ public class Planet : MonoBehaviour {
 	}
 
 	void OnMouseUpAsButton() {
-		if (localPlayer.selected) {
-			localPlayer.SetTargetPlanet (this);
+		if (GetLocalPlayer().selected) {
+			GetLocalPlayer().SetTargetPlanet (this);
 		}
 	}
 
@@ -48,14 +48,14 @@ public class Planet : MonoBehaviour {
 			float distToPlayer = GetDistToPlayer ();
 			float apparentTime = GetApparentTime (distToPlayer);
 			material.color = originalColor * (1f - distToPlayer / maxDist);
-			if (apparentTime >= initialTime && owner == localPlayer) {
+			if (apparentTime >= initialTime && owner == GetLocalPlayer()) {
 				resourceDisplay.text = GetResourcesAtTime (apparentTime).ToString();
 			}
 		}
 	}
 
 	float GetDistToPlayer() {
-		return Vector2.Distance (transform.position, localPlayer.transform.position);
+		return Vector2.Distance (transform.position, GetLocalPlayer().transform.position);
 	}
 
 	float GetApparentTime(float distToPlayer) {
@@ -66,5 +66,12 @@ public class Planet : MonoBehaviour {
 	int GetResourcesAtTime(float time) {
 		int resourcesWithoutEvents = Mathf.FloorToInt(time / secsPerResource);
 		return resourcesWithoutEvents;
+	}
+
+	Player GetLocalPlayer() {
+		if (!localPlayer) {
+			localPlayer = GameObject.FindGameObjectWithTag ("Player").GetComponent<Player>();
+		}
+		return localPlayer;
 	}
 }

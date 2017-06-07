@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour {
-	[SerializeField] Planet planet;
 	[SerializeField] float unitsPerSec = 0.25f;
 	[SerializeField] Color movingColor = Color.red;
 	[SerializeField] Color selectedColor = Color.yellow;
 	[SerializeField] Color originalColor;
+	[SerializeField] Vector3 offset;
 
 	public bool selected { get; private set; }
 
 	Material material;
-	Vector3 offset;
+	Planet planet;
 	Planet tgtPlanet;
 	float CLOSE_ENOUGH = 0.01f;
 
@@ -25,8 +25,7 @@ public class Player : MonoBehaviour {
 
 	void Start() {
 		material = GetComponent<MeshRenderer> ().material;
-		offset = transform.position - planet.transform.position;
-		SetTargetPlanet (planet);
+		transform.position = transform.position + offset; 
 	}
 
 	void Update() {
