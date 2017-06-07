@@ -14,14 +14,19 @@ public class Planet : MonoBehaviour {
 	[SerializeField] float secsPerDisplayUpdate = 1f;
 	[SerializeField] float infoSpeedUnitsPerSec = 0.5f;
 	[SerializeField] float maxDist = 8f;
-	[SerializeField] Player player;
+	[SerializeField] Player localPlayer;
+//	GameObject owner;
 
 //	List<ResourceEvent> resourceEvents;
 	float initialTime;
 	Material material;
 	Color originalColor;
 
-	// Use this for initialization
+	public void Conquer(Color conquerorColor) {
+//		owner = conqueror;
+		originalColor = conquerorColor;
+	}
+
 	void Start () {
 		material = GetComponent<MeshRenderer> ().material;
 		initialTime = Time.time;
@@ -32,8 +37,8 @@ public class Planet : MonoBehaviour {
 	}
 
 	void OnMouseUpAsButton() {
-		if (player.selected) {
-			player.SetTargetPlanet (transform);
+		if (localPlayer.selected) {
+			localPlayer.SetTargetPlanet (this);
 		}
 	}
 
@@ -50,7 +55,7 @@ public class Planet : MonoBehaviour {
 	}
 
 	float GetDistToPlayer() {
-		return Vector2.Distance (transform.position, player.transform.position);
+		return Vector2.Distance (transform.position, localPlayer.transform.position);
 	}
 
 	float GetApparentTime(float distToPlayer) {

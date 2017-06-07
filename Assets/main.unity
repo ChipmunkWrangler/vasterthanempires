@@ -403,7 +403,17 @@ Prefab:
         type: 2}
       propertyPath: planet
       value: 
-      objectReference: {fileID: 1558775542}
+      objectReference: {fileID: 1558775543}
+    - target: {fileID: 114846537327196594, guid: 3ecabc66203b849a3a201830fba17e15,
+        type: 2}
+      propertyPath: originalColor.r
+      value: 0.9100913
+      objectReference: {fileID: 0}
+    - target: {fileID: 114846537327196594, guid: 3ecabc66203b849a3a201830fba17e15,
+        type: 2}
+      propertyPath: originalColor.b
+      value: 0.9632353
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 3ecabc66203b849a3a201830fba17e15, type: 2}
   m_IsPrefabParent: 0
@@ -760,6 +770,11 @@ Prefab:
       propertyPath: maxDist
       value: 10.2
       objectReference: {fileID: 0}
+    - target: {fileID: 114002964676875326, guid: 95291ae4b4d4940f498733a84ff06526,
+        type: 2}
+      propertyPath: localPlayer
+      value: 
+      objectReference: {fileID: 1712074779}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 95291ae4b4d4940f498733a84ff06526, type: 2}
   m_IsPrefabParent: 0
@@ -830,6 +845,12 @@ Transform:
   m_PrefabParentObject: {fileID: 4976457901617908, guid: 95291ae4b4d4940f498733a84ff06526,
     type: 2}
   m_PrefabInternal: {fileID: 1727782738}
+--- !u!114 &1558775543 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114002964676875326, guid: 95291ae4b4d4940f498733a84ff06526,
+    type: 2}
+  m_PrefabInternal: {fileID: 1727782738}
+  m_Script: {fileID: 11500000, guid: ed4e73c0978604b8e864c0c5c438a357, type: 3}
 --- !u!114 &1712074779 stripped
 MonoBehaviour:
   m_PrefabParentObject: {fileID: 114846537327196594, guid: 3ecabc66203b849a3a201830fba17e15,
@@ -895,6 +916,11 @@ Prefab:
       propertyPath: maxDist
       value: 10.2
       objectReference: {fileID: 0}
+    - target: {fileID: 114002964676875326, guid: 95291ae4b4d4940f498733a84ff06526,
+        type: 2}
+      propertyPath: localPlayer
+      value: 
+      objectReference: {fileID: 1712074779}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 95291ae4b4d4940f498733a84ff06526, type: 2}
   m_IsPrefabParent: 0
@@ -1076,6 +1102,11 @@ Prefab:
       propertyPath: maxDist
       value: 10.2
       objectReference: {fileID: 0}
+    - target: {fileID: 114002964676875326, guid: 95291ae4b4d4940f498733a84ff06526,
+        type: 2}
+      propertyPath: localPlayer
+      value: 
+      objectReference: {fileID: 1712074779}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 95291ae4b4d4940f498733a84ff06526, type: 2}
   m_IsPrefabParent: 0

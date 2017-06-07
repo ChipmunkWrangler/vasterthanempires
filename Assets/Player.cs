@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour {
-	[SerializeField] Transform planet;
+	[SerializeField] Planet planet;
 	[SerializeField] float unitsPerSec = 0.25f;
 	[SerializeField] Color movingColor = Color.red;
 	[SerializeField] Color selectedColor = Color.yellow;
+	[SerializeField] Color originalColor;
 
 	public bool selected { get; private set; }
 
 	Material material;
-	Color originalColor;
 	Vector3 offset;
-	Transform tgtPlanet;
+	Planet tgtPlanet;
 	float CLOSE_ENOUGH = 0.01f;
 
-	public void SetTargetPlanet(Transform newPlanet) {
+	public void SetTargetPlanet(Planet newPlanet) {
 		tgtPlanet = newPlanet;
 		planet = null;
 		SetSelected (false);
@@ -25,12 +25,12 @@ public class Player : MonoBehaviour {
 
 	void Start() {
 		material = GetComponent<MeshRenderer> ().material;
-		originalColor = material.color;
-		offset = transform.position - planet.position;
+		offset = transform.position - planet.transform.position;
+		SetTargetPlanet (planet);
 	}
 
 	void Update() {
-		if ( tgtPlanet && MoveTowards (tgtPlanet.position + offset)) {
+		if ( tgtPlanet && MoveTowards (tgtPlanet.transform.position + offset)) {
 			Arrive ();
 		}
 	}
@@ -43,6 +43,7 @@ public class Player : MonoBehaviour {
 	void Arrive() {
 		planet = tgtPlanet;
 		tgtPlanet = null;
+		planet.Conquer (originalColor);
 		UpdateColor ();
 	}
 
