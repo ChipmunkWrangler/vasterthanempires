@@ -95,6 +95,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   secsPerResource: 1
   resourceDisplay: {fileID: 0}
+  secsPerDisplayUpdate: 1
+  infoSpeedUnitsPerSec: 0.5
+  maxDist: 5.6
 --- !u!135 &135012615607057188
 SphereCollider:
   m_ObjectHideFlags: 1
