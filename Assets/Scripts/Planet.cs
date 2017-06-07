@@ -14,7 +14,7 @@ public class Planet : MonoBehaviour {
 	[SerializeField] float secsPerDisplayUpdate = 1f;
 	[SerializeField] float infoSpeedUnitsPerSec = 0.5f;
 	[SerializeField] float maxDist = 8f;
-	[SerializeField] Transform player;
+	[SerializeField] Player player;
 
 //	List<ResourceEvent> resourceEvents;
 	float initialTime;
@@ -31,6 +31,12 @@ public class Planet : MonoBehaviour {
 		StartCoroutine (UpdateDisplay ());
 	}
 
+	void OnMouseUpAsButton() {
+		if (player.selected) {
+			player.MoveTo (transform);
+		}
+	}
+
 	IEnumerator UpdateDisplay() {
 		while (true) {
 			yield return new WaitForSeconds (secsPerDisplayUpdate);
@@ -44,7 +50,7 @@ public class Planet : MonoBehaviour {
 	}
 
 	float GetDistToPlayer() {
-		return Vector2.Distance (transform.position, player.position);
+		return Vector2.Distance (transform.position, player.transform.position);
 	}
 
 	float GetApparentTime(float distToPlayer) {
