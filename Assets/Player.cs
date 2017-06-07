@@ -43,7 +43,7 @@ public class Player : MonoBehaviour {
 	void Arrive() {
 		planet = tgtPlanet;
 		tgtPlanet = null;
-		planet.Conquer (originalColor);
+		planet.Conquer (this, originalColor);
 		UpdateColor ();
 	}
 

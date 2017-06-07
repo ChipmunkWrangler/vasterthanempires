@@ -15,15 +15,15 @@ public class Planet : MonoBehaviour {
 	[SerializeField] float infoSpeedUnitsPerSec = 0.5f;
 	[SerializeField] float maxDist = 8f;
 	[SerializeField] Player localPlayer;
-//	GameObject owner;
 
 //	List<ResourceEvent> resourceEvents;
 	float initialTime;
 	Material material;
 	Color originalColor;
+	Player owner;
 
-	public void Conquer(Color conquerorColor) {
-//		owner = conqueror;
+	public void Conquer(Player conqueror, Color conquerorColor) {
+		owner = conqueror;
 		originalColor = conquerorColor;
 	}
 
@@ -48,7 +48,7 @@ public class Planet : MonoBehaviour {
 			float distToPlayer = GetDistToPlayer ();
 			float apparentTime = GetApparentTime (distToPlayer);
 			material.color = originalColor * (1f - distToPlayer / maxDist);
-			if (apparentTime >= initialTime) {
+			if (apparentTime >= initialTime && owner == localPlayer) {
 				resourceDisplay.text = GetResourcesAtTime (apparentTime).ToString();
 			}
 		}
