@@ -9,7 +9,7 @@ public class Player : NetworkBehaviour {
 	[SerializeField] Color selectedColor = Color.yellow;
 	[SerializeField] Color originalColor;
 	[SerializeField] Color enemyColor;
-	[SerializeField] Vector3 offset;
+	[SerializeField] float offsetDistance;
 
 	public bool selected { get; private set; }
 
@@ -18,6 +18,7 @@ public class Player : NetworkBehaviour {
 	Planet tgtPlanet;
 	float CLOSE_ENOUGH = 0.01f;
 	bool isColorDirty;
+	Vector3 offset;
 
 	public void SetTargetPlanet(Planet newPlanet) {
 		SetSelected (false);
@@ -27,6 +28,8 @@ public class Player : NetworkBehaviour {
 
 	void Start() {
 		material = GetComponent<MeshRenderer> ().material;
+		float theta = Random.Range (0, 360);
+		offset = new Vector3 (Mathf.Sin (theta), Mathf.Cos (theta), 0);
 		transform.position = transform.position + offset; 
 		if (!isLocalPlayer) {
 			originalColor = enemyColor;
