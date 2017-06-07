@@ -126,7 +126,7 @@ MonoBehaviour:
     i14: 126
     i15: 21
   m_ServerOnly: 0
-  m_LocalPlayerAuthority: 1
+  m_LocalPlayerAuthority: 0
 --- !u!114 &114846537327196594
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -141,6 +141,6 @@ MonoBehaviour:
   unitsPerSec: 0.25
   movingColor: {r: 0, g: 0.7352941, b: 0.0050709527, a: 1}
   selectedColor: {r: 0.6764706, g: 1, b: 0.69208926, a: 1}
-  originalColor: {r: 0.0421432, g: 1, b: 0.0074070143, a: 1}
+  originalColor: {r: 0.00740701, g: 1, b: 1, a: 1}
   enemyColor: {r: 1, g: 0, b: 0, a: 1}
   offset: {x: -0.64, y: 0.5, z: -3}

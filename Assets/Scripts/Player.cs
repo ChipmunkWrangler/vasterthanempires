@@ -14,15 +14,15 @@ public class Player : NetworkBehaviour {
 	public bool selected { get; private set; }
 
 	Material material;
-	Planet planet;
+	[SyncVar(hook="TargetPlanetSet")] NetworkInstanceId tgtPlanetId = NetworkInstanceId.Invalid;
 	Planet tgtPlanet;
 	float CLOSE_ENOUGH = 0.01f;
+	bool isColorDirty;
 
 	public void SetTargetPlanet(Planet newPlanet) {
-		tgtPlanet = newPlanet;
-		planet = null;
 		SetSelected (false);
-		UpdateColor ();
+		CmdSetTargetPlanet (newPlanet.netId);
+		// todo: feedback that click was registered
 	}
 
 	void Start() {
@@ -31,13 +31,24 @@ public class Player : NetworkBehaviour {
 		if (!isLocalPlayer) {
 			originalColor = enemyColor;
 		}
-		UpdateColor ();
+		isColorDirty = true;
 	}
 
 	void Update() {
-		if ( tgtPlanet && MoveTowards (tgtPlanet.transform.position + offset)) {
+		if ( tgtPlanetId != NetworkInstanceId.Invalid && MoveTowards (tgtPlanet.transform.position + offset)) {
 			Arrive ();
 		}
+		if (isColorDirty) {
+			UpdateColor ();
+		}
+	}
+		
+	void TargetPlanetSet(NetworkInstanceId newTgtPlanetId) {
+		tgtPlanetId = newTgtPlanetId;
+		if (newTgtPlanetId != NetworkInstanceId.Invalid) {
+			tgtPlanet = ClientScene.FindLocalObject (newTgtPlanetId).GetComponent<Planet> ();
+		}
+		isColorDirty = true;
 	}
 
 	bool MoveTowards(Vector3 tgtPos) {
@@ -46,10 +57,10 @@ public class Player : NetworkBehaviour {
 	}
 
 	void Arrive() {
-		planet = tgtPlanet;
-		tgtPlanet = null;
-		planet.Conquer (this, originalColor);
-		UpdateColor ();
+		tgtPlanet.Conquer (this, originalColor);
+		if (isServer) {
+			tgtPlanetId = NetworkInstanceId.Invalid;
+		}
 	}
 
 	void OnMouseUpAsButton() {
@@ -60,16 +71,22 @@ public class Player : NetworkBehaviour {
 
 	void SetSelected (bool b) {
 		selected = b;
-		UpdateColor ();
+		isColorDirty = true;
 	}
 
 	void UpdateColor() {
 		if (selected) {
 			material.color = selectedColor;
-		} else if (tgtPlanet) {
+		} else if (tgtPlanetId != NetworkInstanceId.Invalid) {
 			material.color = movingColor;
 		} else {
 			material.color = originalColor;
 		}
+		isColorDirty = false;
+	}
+
+
+	[Command] void CmdSetTargetPlanet(NetworkInstanceId planetId) {
+		tgtPlanetId = planetId;
 	}
 }

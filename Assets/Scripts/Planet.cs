@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 
-public class Planet : MonoBehaviour {
+public class Planet : NetworkBehaviour {
 	class ResourceEvent {
 		int resourceChange;
 		float Time;
