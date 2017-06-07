@@ -70,7 +70,13 @@ public class Planet : MonoBehaviour {
 
 	Player GetLocalPlayer() {
 		if (!localPlayer) {
-			localPlayer = GameObject.FindGameObjectWithTag ("Player").GetComponent<Player>();
+			GameObject[] players = GameObject.FindGameObjectsWithTag ("Player");
+			foreach (GameObject o in players) {
+				localPlayer = o.GetComponent<Player> ();
+				if (localPlayer.isLocalPlayer) {
+					break;
+				}
+			}
 		}
 		return localPlayer;
 	}

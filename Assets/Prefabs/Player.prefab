@@ -139,7 +139,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitsPerSec: 0.25
-  movingColor: {r: 1, g: 0.015686274, b: 0.076781586, a: 1}
-  selectedColor: {r: 0.9862069, g: 1, b: 0, a: 1}
-  originalColor: {r: 0.9100913, g: 0, b: 0.9632353, a: 0}
+  movingColor: {r: 0, g: 0.7352941, b: 0.0050709527, a: 1}
+  selectedColor: {r: 0.6764706, g: 1, b: 0.69208926, a: 1}
+  originalColor: {r: 0.0421432, g: 1, b: 0.0074070143, a: 1}
+  enemyColor: {r: 1, g: 0, b: 0, a: 1}
   offset: {x: -0.64, y: 0.5, z: -3}

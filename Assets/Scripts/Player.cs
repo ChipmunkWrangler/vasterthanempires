@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class Player : MonoBehaviour {
+public class Player : NetworkBehaviour {
 	[SerializeField] float unitsPerSec = 0.25f;
 	[SerializeField] Color movingColor = Color.red;
 	[SerializeField] Color selectedColor = Color.yellow;
 	[SerializeField] Color originalColor;
+	[SerializeField] Color enemyColor;
 	[SerializeField] Vector3 offset;
 
 	public bool selected { get; private set; }
@@ -26,6 +28,10 @@ public class Player : MonoBehaviour {
 	void Start() {
 		material = GetComponent<MeshRenderer> ().material;
 		transform.position = transform.position + offset; 
+		if (!isLocalPlayer) {
+			originalColor = enemyColor;
+		}
+		UpdateColor ();
 	}
 
 	void Update() {
@@ -47,7 +53,9 @@ public class Player : MonoBehaviour {
 	}
 
 	void OnMouseUpAsButton() {
-		SetSelected (!selected);
+		if (isLocalPlayer) {
+			SetSelected (!selected);
+		}
 	}
 
 	void SetSelected (bool b) {
