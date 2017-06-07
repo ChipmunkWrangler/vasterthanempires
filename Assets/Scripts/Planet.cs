@@ -14,37 +14,44 @@ public class Planet : MonoBehaviour {
 	[SerializeField] float secsPerDisplayUpdate = 1f;
 	[SerializeField] float infoSpeedUnitsPerSec = 0.5f;
 	[SerializeField] float maxDist = 8f;
+	[SerializeField] Transform player;
 
 //	List<ResourceEvent> resourceEvents;
 	float initialTime;
-	float transmissionSecsToHome;
-
+	Material material;
+	Color originalColor;
 
 	// Use this for initialization
 	void Start () {
-		float distToHome = transform.position.magnitude; // for now, the home planet is at 0,0,0 and doesn't move
-		transmissionSecsToHome = distToHome / infoSpeedUnitsPerSec;
-		Material material = GetComponent<MeshRenderer> ().material;
-		material.color = material.color * (1f - distToHome / maxDist);
+		material = GetComponent<MeshRenderer> ().material;
 		initialTime = Time.time;
 		resourceDisplay.transform.position = Camera.main.WorldToScreenPoint (transform.position);
 		resourceDisplay.text = "";
+		originalColor = material.color;
 		StartCoroutine (UpdateDisplay ());
 	}
 
 	IEnumerator UpdateDisplay() {
 		while (true) {
 			yield return new WaitForSeconds (secsPerDisplayUpdate);
-			float apparentTime = GetApparentTime ();
+			float distToPlayer = GetDistToPlayer ();
+			float apparentTime = GetApparentTime (distToPlayer);
+			material.color = originalColor * (1f - distToPlayer / maxDist);
 			if (apparentTime >= initialTime) {
 				resourceDisplay.text = GetResourcesAtTime (apparentTime).ToString();
 			}
 		}
 	}
 
-	float GetApparentTime() {
-		return Time.time - transmissionSecsToHome;
+	float GetDistToPlayer() {
+		return Vector2.Distance (transform.position, player.position);
 	}
+
+	float GetApparentTime(float distToPlayer) {
+		float transmissionSecsToPlayer = distToPlayer / infoSpeedUnitsPerSec;
+		return Time.time - transmissionSecsToPlayer;
+	}
+
 	int GetResourcesAtTime(float time) {
 		int resourcesWithoutEvents = Mathf.FloorToInt(time / secsPerResource);
 		return resourcesWithoutEvents;
