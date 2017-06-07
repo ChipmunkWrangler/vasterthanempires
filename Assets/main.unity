@@ -518,11 +518,6 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 114265064141487536, guid: 62c2100237d224715a8e03b65c39ab16,
         type: 2}
-      propertyPath: m_FontData.m_FontSize
-      value: 18
-      objectReference: {fileID: 0}
-    - target: {fileID: 114265064141487536, guid: 62c2100237d224715a8e03b65c39ab16,
-        type: 2}
       propertyPath: m_FontData.m_MinSize
       value: 1
       objectReference: {fileID: 0}
@@ -542,7 +537,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4976457901617908, guid: 95291ae4b4d4940f498733a84ff06526, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 2.03
+      value: 2.09
       objectReference: {fileID: 0}
     - target: {fileID: 4976457901617908, guid: 95291ae4b4d4940f498733a84ff06526, type: 2}
       propertyPath: m_LocalPosition.z
@@ -828,7 +823,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4976457901617908, guid: 95291ae4b4d4940f498733a84ff06526, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 4.91
+      value: 7.45
       objectReference: {fileID: 0}
     - target: {fileID: 4976457901617908, guid: 95291ae4b4d4940f498733a84ff06526, type: 2}
       propertyPath: m_LocalPosition.y

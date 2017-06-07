@@ -11,18 +11,24 @@ public class Planet : MonoBehaviour {
 
 	[SerializeField] float secsPerResource = 1f;
 	[SerializeField] Text resourceDisplay;
-	[SerializeField] Vector3 labelOffset;
 	[SerializeField] float secsPerDisplayUpdate = 1f;
 	[SerializeField] float infoSpeedUnitsPerSec = 0.5f;
-	[SerializeField] Transform home;
+	[SerializeField] float maxDist = 8f;
 
 //	List<ResourceEvent> resourceEvents;
 	float initialTime;
+	float transmissionSecsToHome;
+
 
 	// Use this for initialization
 	void Start () {
+		float distToHome = transform.position.magnitude; // for now, the home planet is at 0,0,0 and doesn't move
+		transmissionSecsToHome = distToHome / infoSpeedUnitsPerSec;
+		Material material = GetComponent<MeshRenderer> ().material;
+		material.color = material.color * (1f - distToHome / maxDist);
 		initialTime = Time.time;
-		resourceDisplay.transform.position = Camera.main.WorldToScreenPoint (transform.position) + labelOffset;
+		resourceDisplay.transform.position = Camera.main.WorldToScreenPoint (transform.position);
+		resourceDisplay.text = "";
 		StartCoroutine (UpdateDisplay ());
 	}
 
@@ -37,8 +43,6 @@ public class Planet : MonoBehaviour {
 	}
 
 	float GetApparentTime() {
-		float distToHome = Vector3.Distance (transform.position, home.position);
-		float transmissionSecsToHome = distToHome / infoSpeedUnitsPerSec;
 		return Time.time - transmissionSecsToHome;
 	}
 	int GetResourcesAtTime(float time) {
