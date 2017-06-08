@@ -64,6 +64,10 @@ public class Player : NetworkBehaviour {
 		}
 		UpdateApparentPosition ();
 	}
+
+	void OnDrawGizmos() {
+		Gizmos.DrawCube (actualPosition, new Vector3 (0.2f, 0.2f, 0.2f));
+	}
 		
 	void TargetPlanetSet(NetworkInstanceId newTgtPlanetId) {
 		tgtPlanetId = newTgtPlanetId;
