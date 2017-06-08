@@ -13,10 +13,8 @@ public class Planet : NetworkBehaviour {
 	[SerializeField] float secsPerResource = 1f;
 	[SerializeField] Text resourceDisplay;
 	[SerializeField] float secsPerDisplayUpdate = 1f;
-	[SerializeField] float infoSpeedUnitsPerSec = 0.5f;
 	[SerializeField] float maxDist = 8f;
 
-	Player localPlayer;
 //	List<ResourceEvent> resourceEvents;
 	float initialTime;
 	Material material;
@@ -38,47 +36,27 @@ public class Planet : NetworkBehaviour {
 	}
 
 	void OnMouseUpAsButton() {
-		if (GetLocalPlayer().selected) {
-			GetLocalPlayer().SetTargetPlanet (this);
+		if (VTEUtil.GetLocalPlayer().selected) {
+			VTEUtil.GetLocalPlayer().SetTargetPlanet (this);
 		}
 	}
 
 	IEnumerator UpdateDisplay() {
 		while (true) {
 			yield return new WaitForSeconds (secsPerDisplayUpdate);
-			float distToPlayer = GetDistToPlayer ();
-			float apparentTime = GetApparentTime (distToPlayer);
+			float distToPlayer = VTEUtil.GetDistToLocalPlayer (transform.position);
+			float apparentTime = VTEUtil.GetApparentTime (distToPlayer);
 			material.color = originalColor * (1f - distToPlayer / maxDist);
-			if (apparentTime >= initialTime && owner == GetLocalPlayer()) {
+			if (apparentTime >= initialTime && owner == VTEUtil.GetLocalPlayer()) {
 				resourceDisplay.text = GetResourcesAtTime (apparentTime).ToString();
 			}
 		}
 	}
 
-	float GetDistToPlayer() {
-		return Vector2.Distance (transform.position, GetLocalPlayer().transform.position);
-	}
 
-	float GetApparentTime(float distToPlayer) {
-		float transmissionSecsToPlayer = distToPlayer / infoSpeedUnitsPerSec;
-		return Time.time - transmissionSecsToPlayer;
-	}
 
 	int GetResourcesAtTime(float time) {
 		int resourcesWithoutEvents = Mathf.FloorToInt(time / secsPerResource);
 		return resourcesWithoutEvents;
-	}
-
-	Player GetLocalPlayer() {
-		if (!localPlayer) {
-			GameObject[] players = GameObject.FindGameObjectsWithTag ("Player");
-			foreach (GameObject o in players) {
-				localPlayer = o.GetComponent<Player> ();
-				if (localPlayer.isLocalPlayer) {
-					break;
-				}
-			}
-		}
-		return localPlayer;
 	}
 }
