@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Assertions;
 
 public class Player : NetworkBehaviour {
 	class MovementEvent {
@@ -23,9 +24,7 @@ public class Player : NetworkBehaviour {
 	[SerializeField] Color selectedColor = Color.yellow;
 	[SerializeField] Color originalColor;
 	[SerializeField] Color enemyColor;
-	[SerializeField] Vector3 offset;
 	[SerializeField] Vector3 OFFSCREEN = new Vector3 (-100f, -100f, 0);
-	[SerializeField] float LOCAL_Z_OFFSET = -1f;
 
 	public bool selected { get; private set; }
 	public Vector3 actualPosition { get; private set; }
@@ -45,26 +44,19 @@ public class Player : NetworkBehaviour {
 
 	void Start() {
 		material = GetComponent<MeshRenderer> ().material;
-		if (isLocalPlayer) {
-			offset.z += LOCAL_Z_OFFSET;
-			transform.position = transform.position + offset;
-		} else {
-			transform.position = transform.position - new Vector3 (0, 0, LOCAL_Z_OFFSET);
-			gameObject.GetComponent<Collider> ().enabled = false;
-		}
-		transform.rotation = Random.rotationUniform;
-		actualPosition = transform.position;
 		if (!isLocalPlayer) {
+			gameObject.GetComponent<Collider> ().enabled = false;
 			originalColor = enemyColor;
 			material.color = enemyColor;
 		}
+		actualPosition = transform.position;
 		isColorDirty = true;
 		movementEvents = new List<MovementEvent> ();
 		movementEvents.Add (new MovementEvent(actualPosition, actualPosition));
 	}
 
 	void Update() {
-		if ( tgtPlanetId != NetworkInstanceId.Invalid && MoveTowards (movementEvents[movementEvents.Count-1].tgtPos)) {
+		if ( isServer && tgtPlanetId != NetworkInstanceId.Invalid && MoveTowards (movementEvents[movementEvents.Count-1].tgtPos)) {
 			Arrive ();
 		}
 		if (isColorDirty) {
@@ -78,7 +70,7 @@ public class Player : NetworkBehaviour {
 		if (newTgtPlanetId != NetworkInstanceId.Invalid) {
 			tgtPlanet = ClientScene.FindLocalObject (newTgtPlanetId).GetComponent<Planet> ();
 		}
-		movementEvents.Add (new MovementEvent(actualPosition, tgtPlanet.transform.position + offset));
+		movementEvents.Add (new MovementEvent(actualPosition, tgtPlanet.GetParkingSpace(this.netId)));
 		isColorDirty = true;
 	}
 
@@ -88,16 +80,13 @@ public class Player : NetworkBehaviour {
 	}
 
 	void Arrive() {
-		tgtPlanet.Conquer (this, originalColor);
-		if (isServer) {
-			tgtPlanetId = NetworkInstanceId.Invalid;
-		}
+		Assert.IsTrue (isServer);
+		tgtPlanet.Conquer (this.netId);
+		tgtPlanetId = NetworkInstanceId.Invalid;
 	}
 
 	void OnMouseUpAsButton() {
-		if (isLocalPlayer) {
-			SetSelected (!selected);
-		}
+		SetSelected (!selected);
 	}
 
 	void SetSelected (bool b) {

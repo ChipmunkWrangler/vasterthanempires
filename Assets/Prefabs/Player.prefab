@@ -37,13 +37,13 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1078056823140436}
-  m_LocalRotation: {x: 0.4288515, y: 0.2418988, z: -0.12034283, w: 0.86202615}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 52.9, y: 31.35, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &23327753192073088
 MeshRenderer:
   m_ObjectHideFlags: 1
@@ -143,6 +143,4 @@ MonoBehaviour:
   selectedColor: {r: 0.6764706, g: 1, b: 0.69208926, a: 1}
   originalColor: {r: 0.00740701, g: 1, b: 1, a: 1}
   enemyColor: {r: 1, g: 0, b: 0, a: 1}
-  offset: {x: 0, y: 0.5, z: -1}
-  localPlayerZOffset: -1
   OFFSCREEN: {x: -100, y: -100, z: 0}
