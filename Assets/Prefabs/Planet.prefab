@@ -39,7 +39,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4005179884731538}
-  - component: {fileID: 114754242297256904}
   - component: {fileID: 114067105429338596}
   m_Layer: 0
   m_Name: ParkingSpace2
@@ -56,7 +55,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4018514118176454}
-  - component: {fileID: 114057368311444388}
   - component: {fileID: 114315814462204238}
   m_Layer: 0
   m_Name: ParkingSpace1
@@ -162,38 +160,6 @@ MonoBehaviour:
   maxDist: 10.2
   playerColor: {r: 0, g: 0.7372549, b: 0.003921569, a: 1}
   enemyColor: {r: 1, g: 0, b: 0, a: 1}
---- !u!114 &114057368311444388
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1701088178796294}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SceneId:
-    m_Value: 0
-  m_AssetId:
-    i0: 149
-    i1: 41
-    i2: 26
-    i3: 228
-    i4: 180
-    i5: 212
-    i6: 148
-    i7: 15
-    i8: 73
-    i9: 135
-    i10: 51
-    i11: 168
-    i12: 79
-    i13: 240
-    i14: 101
-    i15: 38
-  m_ServerOnly: 0
-  m_LocalPlayerAuthority: 0
 --- !u!114 &114067105429338596
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -248,38 +214,6 @@ MonoBehaviour:
   m_Script: {fileID: -1050975500, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &114754242297256904
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1570183461216698}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SceneId:
-    m_Value: 0
-  m_AssetId:
-    i0: 149
-    i1: 41
-    i2: 26
-    i3: 228
-    i4: 180
-    i5: 212
-    i6: 148
-    i7: 15
-    i8: 73
-    i9: 135
-    i10: 51
-    i11: 168
-    i12: 79
-    i13: 240
-    i14: 101
-    i15: 38
-  m_ServerOnly: 0
-  m_LocalPlayerAuthority: 0
 --- !u!135 &135012615607057188
 SphereCollider:
   m_ObjectHideFlags: 1
