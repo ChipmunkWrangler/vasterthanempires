@@ -143,6 +143,6 @@ MonoBehaviour:
   selectedColor: {r: 0.6764706, g: 1, b: 0.69208926, a: 1}
   originalColor: {r: 0.00740701, g: 1, b: 1, a: 1}
   enemyColor: {r: 1, g: 0, b: 0, a: 1}
-  offset: {x: 0, y: 0.5, z: 0}
+  offset: {x: 0, y: 0.5, z: -1}
+  localPlayerZOffset: -1
   OFFSCREEN: {x: -100, y: -100, z: 0}
-  LOCAL_Z_OFFSET: -1

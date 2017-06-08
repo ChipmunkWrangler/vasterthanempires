@@ -46,9 +46,13 @@ public class Player : NetworkBehaviour {
 	void Start() {
 		material = GetComponent<MeshRenderer> ().material;
 		if (isLocalPlayer) {
-			offset.z = LOCAL_Z_OFFSET;
+			offset.z += LOCAL_Z_OFFSET;
+			transform.position = transform.position + offset;
+		} else {
+			transform.position = transform.position - new Vector3 (0, 0, LOCAL_Z_OFFSET);
+			gameObject.GetComponent<Collider> ().enabled = false;
 		}
-		transform.position = transform.position + offset;
+		transform.rotation = Random.rotationUniform;
 		actualPosition = transform.position;
 		if (!isLocalPlayer) {
 			originalColor = enemyColor;
