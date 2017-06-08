@@ -6,3 +6,7 @@ obj
 iosbuild
 osxbuild
 osxbuild.app
+Assembly-CSharp-Editor.csproj
+VasterThanEmpires.userprefs
+Assets/StreamingAssets
+Assets/Unity-Logs-Viewer/ReporterDocumentation
