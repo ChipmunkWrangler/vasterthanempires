@@ -21,6 +21,7 @@ public class Planet : NetworkBehaviour {
 	[SerializeField] float maxDist = 8f;
 	[SerializeField] Color playerColor;
 	[SerializeField] Color enemyColor;
+	[SerializeField] PlanetSelector selection;
 
 	List<ConquestEvent> conquestEvents;
 	Material material;
@@ -46,8 +47,10 @@ public class Planet : NetworkBehaviour {
 	}
 
 	void OnMouseUpAsButton() {
-		if (VTEUtil.GetLocalPlayer().selected) {
-			VTEUtil.GetLocalPlayer().SetTargetPlanet (this);
+		if (VTEUtil.GetLocalPlayer ().selected) {
+			VTEUtil.GetLocalPlayer ().SetTargetPlanet (this);
+		} else {
+			selection.Select (gameObject);
 		}
 	}
 

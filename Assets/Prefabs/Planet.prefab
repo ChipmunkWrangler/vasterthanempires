@@ -154,12 +154,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed4e73c0978604b8e864c0c5c438a357, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  secsPerResource: 1
+  secsPerDrone: 1
   resourceDisplay: {fileID: 0}
   secsPerDisplayUpdate: 1
   maxDist: 10.2
   playerColor: {r: 0, g: 0.7372549, b: 0.003921569, a: 1}
   enemyColor: {r: 1, g: 0, b: 0, a: 1}
+  selection: {fileID: 1281658257735804, guid: 37d2dc3dbcac54112ab67c8a970537e3, type: 2}
 --- !u!114 &114067105429338596
 MonoBehaviour:
   m_ObjectHideFlags: 1
