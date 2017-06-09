@@ -62,11 +62,7 @@ public class Planet : NetworkBehaviour {
 	}
 
 	void SelectOrigin() {
-		float distToPlayer = VTEUtil.GetDistToLocalPlayer (transform.position);
-		float apparentTime = VTEUtil.GetApparentTime (distToPlayer);
-		if (IsFriendly (apparentTime)) {
-			selection.Select (gameObject);
-		}
+		selection.Select (gameObject);
 	}
 
 	void Deselect() {
@@ -74,7 +70,7 @@ public class Planet : NetworkBehaviour {
 	}
 
 	void SelectTarget(GameObject origin) {
-		print ("Sent ships!");
+		VTEUtil.GetLocalPlayer ().SendDrones (origin.GetComponent<Planet> (), this);
 		Deselect ();
 	}
 
@@ -85,17 +81,9 @@ public class Planet : NetworkBehaviour {
 			float apparentTime = VTEUtil.GetApparentTime (distToPlayer);
 			UpdateColor (apparentTime, distToPlayer);
 			UpdateDroneDisplay (apparentTime);
-			UpdateSelection (apparentTime);
 		}
 	}
-
-
-	void UpdateSelection(float time) {
-		if (selection.GetSelected() == gameObject && !IsFriendly (time)) {
-			selection.Select (null);
-		}
-	}
-
+		
 	void UpdateDroneDisplay(float time) {
 		int numDrones = GetDronesAt (time);
 		resourceDisplay.text = numDrones > 0 ? numDrones.ToString() : "";
