@@ -6,9 +6,13 @@ using UnityEngine.Networking;
 using UnityEngine.Assertions;
 
 public class Planet : NetworkBehaviour {
-	class ResourceEvent {
-		int resourceChange;
-		float Time;
+	class ConquestEvent {
+		public NetworkInstanceId ownerId { get; private set; }
+		public float time { get; private set; }
+		public ConquestEvent(NetworkInstanceId _ownerId) { 
+			ownerId = _ownerId;
+			time = VTEUtil.GetApparentTime();
+		}
 	}
 
 	[SerializeField] float secsPerResource = 1f;
@@ -18,15 +22,13 @@ public class Planet : NetworkBehaviour {
 	[SerializeField] Color playerColor;
 	[SerializeField] Color enemyColor;
 
-//	List<ResourceEvent> resourceEvents;
+	List<ConquestEvent> conquestEvents;
 	float initialTime;
 	Material material;
 	Color neutralColor;
-	[SyncVar] NetworkInstanceId ownerId = NetworkInstanceId.Invalid;
 
 	public void Conquer(NetworkInstanceId conquerorId) {
-		Assert.IsTrue (isServer);
-		ownerId = conquerorId;
+		conquestEvents.Add(new ConquestEvent(conquerorId));
 	}
 
 	public Vector3 GetParkingSpace(NetworkInstanceId shipId) {
@@ -39,6 +41,7 @@ public class Planet : NetworkBehaviour {
 		resourceDisplay.transform.position = Camera.main.WorldToScreenPoint (transform.position);
 		resourceDisplay.text = "";
 		neutralColor = material.color;
+		conquestEvents = new List<ConquestEvent> ();
 		StartCoroutine (UpdateDisplay ());
 	}
 
@@ -53,9 +56,10 @@ public class Planet : NetworkBehaviour {
 			yield return new WaitForSeconds (secsPerDisplayUpdate);
 			float distToPlayer = VTEUtil.GetDistToLocalPlayer (transform.position);
 			float apparentTime = VTEUtil.GetApparentTime (distToPlayer);
-			bool ownerIsPlayer = ownerId == VTEUtil.GetLocalPlayer ().netId;
-			UpdateColor (ownerIsPlayer, distToPlayer);
-			if (apparentTime >= initialTime && ownerIsPlayer) {
+			NetworkInstanceId apparentOwnerId = GetOwnerAt (apparentTime);
+			UpdateColor (apparentOwnerId, distToPlayer);
+			bool apparentOwnerIsPlayer = apparentOwnerId == VTEUtil.GetLocalPlayer ().netId;
+			if (apparentTime >= initialTime && apparentOwnerIsPlayer) {
 				resourceDisplay.text = GetResourcesAtTime (apparentTime).ToString();
 			}
 		}
@@ -66,10 +70,16 @@ public class Planet : NetworkBehaviour {
 		return resourcesWithoutEvents;
 	}
 
-	void UpdateColor(bool ownerIsPlayer, float distToPlayer) {
+	NetworkInstanceId GetOwnerAt(float time) {
+		ConquestEvent lastConquest = conquestEvents.FindLast( conquestEvent => conquestEvent.time < time );
+		return lastConquest != null ? lastConquest.ownerId : NetworkInstanceId.Invalid;
+	}
+
+	void UpdateColor(NetworkInstanceId apparentOwnerId, float distToPlayer) {
 		Color baseColor = neutralColor;
-		if (ownerId != NetworkInstanceId.Invalid) {
-			baseColor = ownerIsPlayer ? playerColor : enemyColor;
+		if (apparentOwnerId != NetworkInstanceId.Invalid) {
+			bool apparentOwnerIsPlayer = apparentOwnerId == VTEUtil.GetLocalPlayer ().netId;
+			baseColor = apparentOwnerIsPlayer ? playerColor : enemyColor;
 		}
 		material.color = baseColor * (1f - distToPlayer / maxDist);
 	}

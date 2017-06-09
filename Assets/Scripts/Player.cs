@@ -70,10 +70,6 @@ public class Player : NetworkBehaviour {
 	void CheckForArrival() {
 		Assert.IsTrue (isServer);
 		if (IsMoving () && GetActualPosition () == GetTgtPos ()) { 
-			Planet tgtPlanet = GetTgtPlanet ();
-			if (tgtPlanet) {
-				tgtPlanet.Conquer (this.netId);
-			}
 			RpcEndMovement (GetCurrentMovementEventIdx ());
 		}
 	}
@@ -96,10 +92,6 @@ public class Player : NetworkBehaviour {
 		
 	Vector3 GetTgtPos() {
 		return GetCurrentMovementEvent().tgtPos;
-	}
-
-	Planet GetTgtPlanet() {
-		return GetCurrentMovementEvent ().tgtPlanet;
 	}
 
 	void OnMouseUpAsButton() {
@@ -139,9 +131,11 @@ public class Player : NetworkBehaviour {
 	}
 		
 	[ClientRpc] void RpcEndMovement(int i) {
-		print ("Arrive at " + VTEUtil.GetApparentTime() + " after " + (VTEUtil.GetApparentTime() - movementEvents [i].time));
-		print ("Completing movement " + i.ToString () + " : " + movementEvents [i].ToString ());
-		movementEvents [i].done = true;
+		MovementEvent movementEvent = movementEvents [i];
+		print ("Arrive at " + VTEUtil.GetApparentTime() + " after " + (VTEUtil.GetApparentTime() - movementEvent.time));
+		print ("Completing movement " + i.ToString () + " : " + movementEvent.ToString ());
+		movementEvent.done = true;
+		movementEvent.tgtPlanet.Conquer (this.netId);
 		UpdateColor ();
 	}
 		
