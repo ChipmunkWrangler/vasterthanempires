@@ -8,10 +8,10 @@ static public class VTEUtil {
 
 
 	static public float GetDistToLocalPlayer(Vector3 pos) {
-		return Vector2.Distance (pos, GetLocalPlayer().actualPosition);
+		return Vector2.Distance (pos, GetLocalPlayer().GetActualPosition());
 	}
 		
-	static public float GetApparentTime(float distToLocalPlayer) {
+	static public float GetApparentTime(float distToLocalPlayer = 0) {
 		float transmissionSecsToPlayer = distToLocalPlayer / infoSpeedUnitsPerSec;
 		return Time.time - transmissionSecsToPlayer;
 	}

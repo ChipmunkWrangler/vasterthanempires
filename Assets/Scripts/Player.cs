@@ -6,16 +6,20 @@ using UnityEngine.Assertions;
 
 public class Player : NetworkBehaviour {
 	class MovementEvent {
+		public bool done;
 		public Vector3 startPos { get; private set; }
 		public Vector3 tgtPos { get; private set; }
 		public float time { get; private set; }
-		public MovementEvent(Vector3 _startPos, Vector3 _tgtPos) { 
+		public Planet tgtPlanet { get; private set; }
+		public MovementEvent(Vector3 _startPos, Vector3 _tgtPos, Planet _tgtPlanet) { 
 			startPos = _startPos;
 			tgtPos = _tgtPos;
-			time = Time.time;
+			time = VTEUtil.GetApparentTime();
+			tgtPlanet = _tgtPlanet;
+			done = _startPos == _tgtPos;
 		}
 		override public string ToString() {
-			return "startPos = " + startPos.ToString () + " tgtPos " + tgtPos.ToString () + " time= " + time.ToString ();
+			return "startPos = " + startPos.ToString () + " tgtPos " + tgtPos.ToString () + " time= " + time.ToString () + " planet = " + (tgtPlanet == null ? "None" : tgtPlanet.netId.ToString()) + " done = " + done.ToString();
 		}
 	}
 
@@ -27,21 +31,21 @@ public class Player : NetworkBehaviour {
 	[SerializeField] Vector3 OFFSCREEN = new Vector3 (-100f, -100f, 0);
 
 	public bool selected { get; private set; }
-	public Vector3 actualPosition { get; private set; }
 
 	Material material;
-	[SyncVar(hook="TargetPlanetSet")] NetworkInstanceId tgtPlanetId = NetworkInstanceId.Invalid;
-	Planet tgtPlanet;
-	float CLOSE_ENOUGH = 0.01f;
-	bool isColorDirty;
 	List<MovementEvent> movementEvents; // last elements are the most recent
 
 	public void SetTargetPlanet(Planet newPlanet) {
+		print ("SetTargetPlanet at " + VTEUtil.GetApparentTime());
 		SetSelected (false);
 		CmdSetTargetPlanet (newPlanet.netId);
 		// todo: feedback that click was registered
 	}
 
+	public Vector3 GetActualPosition() {
+		return GetPositionAt (VTEUtil.GetApparentTime ()).Value;
+	}
+		
 	void Start() {
 		material = GetComponent<MeshRenderer> ().material;
 		if (!isLocalPlayer) {
@@ -49,44 +53,53 @@ public class Player : NetworkBehaviour {
 			originalColor = enemyColor;
 			material.color = enemyColor;
 		}
-		actualPosition = transform.position;
-		isColorDirty = true;
 		movementEvents = new List<MovementEvent> ();
-		movementEvents.Add (new MovementEvent(actualPosition, actualPosition));
+		AddMovementEvent (transform.position, transform.position);
+		UpdateColor ();
 	}
 
 	void Update() {
-		if ( isServer && tgtPlanetId != NetworkInstanceId.Invalid && MoveTowards (movementEvents[movementEvents.Count-1].tgtPos)) {
-			Arrive ();
+		if (isServer) {
+			CheckForArrival ();
 		}
-		if (isColorDirty) {
-			UpdateColor ();
+		if (isClient) {
+			UpdateApparentPosition ();
 		}
-		UpdateApparentPosition ();
+	}
+
+	void CheckForArrival() {
+		Assert.IsTrue (isServer);
+		if (IsMoving () && GetActualPosition () == GetTgtPos ()) { 
+			Planet tgtPlanet = GetTgtPlanet ();
+			if (tgtPlanet) {
+				tgtPlanet.Conquer (this.netId);
+			}
+			RpcEndMovement (GetCurrentMovementEventIdx ());
+		}
 	}
 
 	void OnDrawGizmos() {
-		Gizmos.DrawCube (actualPosition, new Vector3 (0.2f, 0.2f, 0.2f));
+		Gizmos.DrawCube (GetActualPosition(), new Vector3 (0.2f, 0.2f, 0.2f));
+	}
+
+	int GetCurrentMovementEventIdx () {
+		return movementEvents.Count - 1;
+	}
+
+	MovementEvent GetCurrentMovementEvent() {
+		return movementEvents [GetCurrentMovementEventIdx()];
+	}
+
+	bool IsMoving() {
+		return !GetCurrentMovementEvent ().done;
 	}
 		
-	void TargetPlanetSet(NetworkInstanceId newTgtPlanetId) {
-		tgtPlanetId = newTgtPlanetId;
-		if (newTgtPlanetId != NetworkInstanceId.Invalid) {
-			tgtPlanet = ClientScene.FindLocalObject (newTgtPlanetId).GetComponent<Planet> ();
-		}
-		movementEvents.Add (new MovementEvent(actualPosition, tgtPlanet.GetParkingSpace(this.netId)));
-		isColorDirty = true;
+	Vector3 GetTgtPos() {
+		return GetCurrentMovementEvent().tgtPos;
 	}
 
-	bool MoveTowards(Vector3 tgtPos) {
-		actualPosition = Vector3.MoveTowards (actualPosition, tgtPos, unitsPerSec * Time.deltaTime);
-		return (Vector3.Distance (actualPosition, tgtPos) <= CLOSE_ENOUGH);			
-	}
-
-	void Arrive() {
-		Assert.IsTrue (isServer);
-		tgtPlanet.Conquer (this.netId);
-		tgtPlanetId = NetworkInstanceId.Invalid;
+	Planet GetTgtPlanet() {
+		return GetCurrentMovementEvent ().tgtPlanet;
 	}
 
 	void OnMouseUpAsButton() {
@@ -95,7 +108,7 @@ public class Player : NetworkBehaviour {
 
 	void SetSelected (bool b) {
 		selected = b;
-		isColorDirty = true;
+		UpdateColor ();
 	}
 
 	void UpdateColor() {
@@ -104,28 +117,40 @@ public class Player : NetworkBehaviour {
 		}
 		if (selected) {
 			material.color = selectedColor;
-		} else if (tgtPlanetId != NetworkInstanceId.Invalid) {
+		} else if (IsMoving() ) {
 			material.color = movingColor;
 		} else {
 			material.color = originalColor;
 		}
-		isColorDirty = false;
 	}
 
 
 	[Command] void CmdSetTargetPlanet(NetworkInstanceId planetId) {
-		tgtPlanetId = planetId;
+		print ("CmdSetTgtPlanet " + this.netId + " to planet " + planetId);
+		RpcStartMovement (planetId, GetActualPosition());
 	}
 
-	void UpdateApparentPosition() {
-		if (!isClient) {
-			return;
-		}
-		print("UpdateApparentPosition");
-		float time = VTEUtil.GetApparentTime (VTEUtil.GetDistToLocalPlayer(actualPosition)); 
+	[ClientRpc] void RpcStartMovement(NetworkInstanceId planetId, Vector3 startPos) { // don't rely on actualPosition being synched at exactly this moment
+		print ("RpcStartMovement ");
+		Planet tgtPlanet = ClientScene.FindLocalObject (planetId).GetComponent<Planet> ();
+		Vector3 tgtPos = tgtPlanet.GetParkingSpace (this.netId);
+		AddMovementEvent(startPos, tgtPos, tgtPlanet); 
+		UpdateColor ();
+	}
+		
+	[ClientRpc] void RpcEndMovement(int i) {
+		print ("Arrive at " + VTEUtil.GetApparentTime() + " after " + (VTEUtil.GetApparentTime() - movementEvents [i].time));
+		print ("Completing movement " + i.ToString () + " : " + movementEvents [i].ToString ());
+		movementEvents [i].done = true;
+		UpdateColor ();
+	}
+		
+	void UpdateApparentPosition() {		
+//		print("UpdateApparentPosition");
+		float time = VTEUtil.GetApparentTime (VTEUtil.GetDistToLocalPlayer(GetActualPosition())); 
 		Vector3? newPosition = GetPositionAt (time);
 		transform.position = newPosition.HasValue ? newPosition.Value : OFFSCREEN;
-		print ("Apparent pos " + transform.position.ToString() + " Actual pos " + actualPosition.ToString());
+//		print ("Apparent pos " + transform.position.ToString() + " Actual pos " + actualPosition.ToString());
 	}
 
 	Vector3? GetPositionAt(float time) {
@@ -135,9 +160,15 @@ public class Player : NetworkBehaviour {
 		}
 		float timeRequired = Vector3.Distance(lastDeparture.startPos, lastDeparture.tgtPos) / unitsPerSec;
 		float fractionCompleted = (time - lastDeparture.time) / timeRequired;
-		print (lastDeparture);
-		print("Appent Time" + time.ToString() + " Actual time " + Time.time );
-		print ("Fraction completed = " + fractionCompleted);
+//		print (lastDeparture);
+//		print("Apparent Time" + time.ToString() + " Actual time " + VTEUtil.GetApparentTime() );
+//		print ("Fraction completed = " + fractionCompleted);
 		return Vector3.Lerp (lastDeparture.startPos, lastDeparture.tgtPos, fractionCompleted);
+	}
+
+	void AddMovementEvent(Vector3 startPosition, Vector3 tgtPosition, Planet tgtPlanet = null) {
+		movementEvents.Add (new MovementEvent (startPosition, tgtPosition, tgtPlanet));
+		print ("Creating Movement Event for player " + this.netId.Value.ToString () + " : total = " + movementEvents.Count);
+		print (movementEvents [movementEvents.Count - 1].ToString ());			
 	}
 }
