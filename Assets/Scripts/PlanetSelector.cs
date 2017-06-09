@@ -6,7 +6,7 @@ public class PlanetSelector : MonoBehaviour {
 	GameObject selected;
 
 	public void Select (GameObject o) {
-		if (selected == o) {
+		if (selected == o || o == null) {
 			gameObject.SetActive (false);
 			selected = null;
 		} else {
@@ -14,5 +14,9 @@ public class PlanetSelector : MonoBehaviour {
 			transform.position = o.transform.position;
 			selected = o;
 		}
+	}
+
+	public GameObject GetSelected() {
+		return selected;
 	}
 }

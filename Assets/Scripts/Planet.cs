@@ -50,8 +50,32 @@ public class Planet : NetworkBehaviour {
 		if (VTEUtil.GetLocalPlayer ().selected) {
 			VTEUtil.GetLocalPlayer ().SetTargetPlanet (this);
 		} else {
+			GameObject origin = selection.GetSelected ();
+			if (origin == null) {
+				SelectOrigin ();
+			} else if (origin == gameObject) {
+				Deselect ();
+			} else {
+				SelectTarget (origin);
+			}
+		}
+	}
+
+	void SelectOrigin() {
+		float distToPlayer = VTEUtil.GetDistToLocalPlayer (transform.position);
+		float apparentTime = VTEUtil.GetApparentTime (distToPlayer);
+		if (IsFriendly (apparentTime)) {
 			selection.Select (gameObject);
 		}
+	}
+
+	void Deselect() {
+		selection.Select(null);
+	}
+
+	void SelectTarget(GameObject origin) {
+		print ("Sent ships!");
+		Deselect ();
 	}
 
 	IEnumerator UpdateDisplay() {
@@ -61,6 +85,14 @@ public class Planet : NetworkBehaviour {
 			float apparentTime = VTEUtil.GetApparentTime (distToPlayer);
 			UpdateColor (apparentTime, distToPlayer);
 			UpdateDroneDisplay (apparentTime);
+			UpdateSelection (apparentTime);
+		}
+	}
+
+
+	void UpdateSelection(float time) {
+		if (selection.GetSelected() == gameObject && !IsFriendly (time)) {
+			selection.Select (null);
 		}
 	}
 
@@ -87,6 +119,11 @@ public class Planet : NetworkBehaviour {
 		return ce;
 	}
 
+	bool IsFriendly(float time) {
+		NetworkInstanceId ownerId = GetLastConquestEventBefore (time).ownerId;
+		return ownerId == VTEUtil.GetLocalPlayer ().netId;
+	}
+					
 	void UpdateColor(float time, float distToPlayer) {
 		Color baseColor = enemyColor;
 		NetworkInstanceId ownerId = GetLastConquestEventBefore (time).ownerId;
