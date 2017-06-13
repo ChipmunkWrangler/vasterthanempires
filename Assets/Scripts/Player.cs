@@ -35,6 +35,7 @@ public class Player : NetworkBehaviour {
 
 	Material material;
 	List<MovementEvent> movementEvents; // last elements are the most recent
+	const float SMALL = 0.0001f;
 
 	public void SetTargetPlanet(Planet newPlanet) {
 		print ("SetTargetPlanet at " + VTEUtil.GetApparentTime());
@@ -196,7 +197,7 @@ public class Player : NetworkBehaviour {
 		print (movementEvents [movementEvents.Count - 1].ToString ());			
 	}
 		
-	void GetApparentTime(Player otherPlayer) { 
+	float GetApparentTime(Player otherPlayer) { 
 		// for two moving players, their positions given by f(t) = other player's position at time t, and g(t) = my position at time t, 
 		// we want to find the latest t such that the other player can see me now.
 		//                                     => information that leaves g(t) at time t reaches f(NOW) at time NOW
@@ -217,17 +218,100 @@ public class Player : NetworkBehaviour {
 		// =>           (K - St)^2 + (L - Wt)^2 = C^2 * (NOW^2 - 2t * NOW + t^2)
 		// =>           K^2 - 2KSt + S^2*t^2 + L^2 - 2LWt + W^2*t^2 = C^2*NOW^2 - 2*C^2*NOW*t + C^2*t^2
 		// =>           (K^2 + L^2 - C^2*NOW^2) + (2*C^2*NOW - 2KS - 2LW)t + (S^2 + W^2 - C^2)t^2 = 0     (Call this Equation 1)
-		// Let a := (K^2 + L^2 - C^2*NOW^2), b := (2*C^2*NOW - 2KS - 2LW), c := (S^2 + W^2 - C^2)
+		// Let a := (S^2 + W^2 - C^2), b := (2*C^2*NOW - 2KS - 2LW), c := (K^2 + L^2 - C^2*NOW^2)
 		// => t = (-b +/- sqrt( b^2 - 4ac)) / 2a  (Quadratic formula)
-
 
 		// If S & W are zero, we get the special case used in VEUtil from Equation 1:
 		// =>           (K^2 + L^2 - C^2*NOW^2) + (2*C^2*NOW)t - C^2*t^2 = 0
 		// =>           ((X - A)^2 + (Y - B)^2 - C^2*NOW^2) + (2*C^2*NOW)t - C^2*t^2 = 0
-		// =>           Dist(g(NOW), f(NOW))^2 / C^2 = NOW^2 - (2*NOW)t + t^2 = (NOW - t)^2
+		// =>           Dist(g(NOW), f(NOW))^2 = C^2*NOW^2 - (2*C^2*NOW)t + C^2*t^2
+		// =>           Dist(g(NOW), f(NOW))^2 / C^2 = NOW^2 - (2*NOW)t + t^2
 		// =>           Dist(g(NOW), f(NOW))^2 / C^2 = (NOW - t)^2
 		// =>           Dist(g(NOW), f(NOW) / C = NOW - t
 		// =>  t =  NOW - Dist(g(NOW), f(NOW) / C
+		// or, using the quadratic formula:
+		// => a = K^2 + L^2 - C^2*NOW^2, b = 2*C^2*NOW, c := -C^2
+		// => a = -C^2, b = 2*C^2*NOW, c := Dist(g(NOW), f(NOW))^2 - C^2*NOW^2
+		// => t = (-2*C^2*NOW +/- sqrt( (2*C^2*NOW)^2 + 4C^2(Dist(g(NOW), f(NOW))^2 - C^2*NOW^2))) / -2C^2  (Quadratic formula)
+		// => t = (-2*C^2*NOW +/- 2C * sqrt( C^2*NOW^2 + Dist(g(NOW), f(NOW))^2 - C^2*NOW^2)) / -2C^2
+		// => t = (-2*C^2*NOW +/- 2C * sqrt( Dist(g(NOW), f(NOW))^2 )) / -2C^2
+		// => t = (-2*C^2*NOW +/- 2C * Dist(g(NOW), f(NOW)) ) / -2C^2
+		// => t = NOW +/- Dist(g(NOW), f(NOW)) / C
 
+		// If g = f (that is, if we are determine the apparent time wrt to ourselves), then
+		// consider the two-dimensional version:
+		// g(t) = g(T) + S * (t - T)
+		// => f(t) = g(T) + S * (t - T)  		(since f = g)
+		// => f(NOW) = g(T) + S * (NOW - T)
+		// => X = A + S * (NOW - T)
+		// => X - A + ST = SNOW		 			(call this Equation 3)
+		// and
+		// h(t) = NOW - t
+		// Distance(f(NOW), g(t)) / C = NOW - t
+		// t = NOW - |X - x| / C
+		// t = NOW - |X - (A + S * (t - T))| / C
+		// t = NOW - |X - A + ST - St| / C
+		// t = NOW - |SNOW - St| / C			(Equation 3)
+		// t = NOW - |S(NOW - t)| / C  			
+		// Ct = CNOW - SNOW + St				(since S >= 0 and NOW >= t)
+		// t = NOW * (C - S) / (C - S)
+		// t = NOW as expected (unless C = S).
+
+		// now try it in three dimensions:
+		// g(t) = g(T) + V * (t - T)
+		// => f(t) = g(T) + V * (t - T)
+		// => f(NOW) = g(T) + V * (NOW - T)
+		// => (X,Y) = (A,B) + (S,W) * (NOW - T)
+		// => (X - A, Y - B) = (NOW * S - ST, NOW * W - WT)
+		// => (X - A + ST, Y - B + WT) = (NOW * S, NOW * W)
+		// => (K, L) = (NOW * S, NOW * W)		(call this Equation 4)
+		// and
+		// h(t) = NOW - t
+		// Distance(f(NOW), g(t)) / C = NOW - t
+		// t = NOW - Sqrt((X - x)^2 + (Y - y)^2) / C
+		// t = NOW - Sqrt((X - (A + S * (t - T)))^2 + (Y - (B + W * (t - T)))^2) / C
+		// t = NOW - Sqrt((X - A - St + ST)^2 + (Y - B - Wt + WT)^2) / C
+		// t = NOW - Sqrt((SNOW - St)^2 + (WNOW - Wt)^2) / C								(Equation 4)
+		// C(NOW - t) = Sqrt((SNOW - St)^2 + (WNOW - Wt)^2)
+		// C^2(NOW - t)^2 = (SNOW - St)^2 + (WNOW - Wt)^2
+		// C^2NOW^2 - 2C^2NOWt + C^2t^2 = S^2NOW^2 - 2S^2tNOW + S^2t^2 + W^2NOW^2 - 2W^2tNOW + W^2t^2
+		// NOW^2(C^2 - S^2 - W^2) - 2NOW(C^2 - W^2 - S^2)t + (C^2 - S^2 - W^2)t^2 = 0
+		// if the ship is not travelling at lightspeed, then 0 != (C^2 - S^2 - W^2), so
+		// NOW^2 - 2NOW * t + t^2 = 0		
+		// (t - NOW)^2 = 0
+		// t = NOW as expected.
+		// Now with the quadratic formula:
+		// a := (S^2 + W^2 - C^2), b := (2*C^2*NOW - 2KS - 2LW), c := (K^2 + L^2 - C^2*NOW^2)
+		// b := -2NOW(S^2 + W^2 - C^2), c := NOW^2(S^2 + W^2 - C^2)
+		// b := -2NOWa, c := NOW^2a, c = NOW^2a
+		// t = (-b +/- sqrt(b^2 - 4ac))/2a
+		// t = (2NOWa +/- sqrt((2NOWa)^2 - 4aNOW^2a))/2a
+		// t = (2NOWa +/- sqrt(4NOW^2a^2 - 4NOW^2a^2))/2a
+		// t = 2NOWa/2a
+		// t = NOW
+
+		MovementEvent movementEvent = GetCurrentMovementEvent();
+
+		Vector2 movementDir = ((Vector2)(movementEvent.tgtPos - movementEvent.startPos)).normalized;
+		float S = unitsPerSec * movementDir.x;
+		float W = unitsPerSec * movementDir.y;
+		Vector3 otherPos = otherPlayer.GetActualPosition ();
+		float K = otherPos.x - movementEvent.startPos.x + S * movementEvent.time;
+		float L = otherPos.y - movementEvent.startPos.y + W * movementEvent.time;
+		float C = VTEUtil.infoSpeedUnitsPerSec;
+		float NOW = VTEUtil.GetApparentTime ();
+		float a = S * S + W * W - C * C;
+		float b = 2 * C * C * NOW - 2 * K * S - 2 * L * W;
+		float c = K * K + L * L - C * C * NOW * NOW;
+		float square = b * b - 4 * a * c;
+		if (square < 0 && square > -SMALL) {
+			square = 0;
+		}
+		// TODO Special case for unitsPerSec = C 
+		// => a = 0 
+		// =>  t = -(K^2 + L^2 - C^2*NOW^2) / (2*C^2*NOW - 2KS - 2LW) for (C^2*NOW != KS + LW), in which case TODO
+
+		float t = (-b - Mathf.Sqrt (square)) / (2 * a);
+		return t;
 	}
 }

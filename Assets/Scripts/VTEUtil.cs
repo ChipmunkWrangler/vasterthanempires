@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 static public class VTEUtil {
-	static float infoSpeedUnitsPerSec = 1f;
+	public const float infoSpeedUnitsPerSec = 1f;
 	static Player localPlayer;
 
 
