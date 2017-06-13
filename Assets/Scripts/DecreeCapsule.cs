@@ -11,6 +11,7 @@ public class DecreeCapsule : NetworkBehaviour {
 	Vector3 startPos;
 	float startTime;
 	bool initialized;
+	bool executed;
 
 	public void Init(Decree _decree, Vector3 _tgt) {
 		decree = _decree;
@@ -30,6 +31,9 @@ public class DecreeCapsule : NetworkBehaviour {
 		}
 		if (isClient) {
 			UpdateApparentPosition ();
+			if (transform.position == tgtPos) {
+				Destroy (gameObject);
+			}
 		}
 	}
 
@@ -39,18 +43,21 @@ public class DecreeCapsule : NetworkBehaviour {
 
 	void CheckForArrival() {
 		UnityEngine.Assertions.Assert.IsTrue (isServer);
-		print (GetActualPosition());
-		if (GetActualPosition () == tgtPos) { 
-			RpcEndMovement ();
+		if (!executed && GetActualPosition () == tgtPos) { 
+			decree.Execute();
+			executed = true;
 		}
 	}
 
 	void UpdateApparentPosition() {		
-		float time = VTEUtil.GetApparentTime (VTEUtil.GetDistToLocalPlayer(GetActualPosition())); 
+		float time = VTEUtil.GetApparentTime (startPos, tgtPos, startTime, unitsPerSec, VTEUtil.GetLocalPlayer().GetActualPosition());
 		transform.position = GetPositionAt (time);
 	}
 
 	Vector3 GetPositionAt(float time) {
+		if (time == 0) {
+			return VTEUtil.OFFSCREEN;
+		}
 		float timeRequired = Vector3.Distance(startPos, tgtPos) / unitsPerSec;
 		float fractionCompleted = (time - startTime) / timeRequired;
 		return Vector3.Lerp (startPos, tgtPos, fractionCompleted);
@@ -58,10 +65,5 @@ public class DecreeCapsule : NetworkBehaviour {
 
 	public Vector3 GetActualPosition() {
 		return GetPositionAt (VTEUtil.GetTime ());
-	}
-
-	[ClientRpc] void RpcEndMovement() {
-		decree.Execute();
-		Destroy (gameObject);
 	}
 }

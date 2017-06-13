@@ -4,8 +4,10 @@ using UnityEngine;
 
 static public class VTEUtil {
 	public const float infoSpeedUnitsPerSec = 1f;
+	public static Vector3 OFFSCREEN = new Vector3 (-100f, -100f, 0);
 	const float SMALL = 0.0001f;
 	static Player localPlayer;
+
 
 	static public float GetDistToLocalPlayer(Vector3 pos) {
 		return Vector2.Distance (pos, GetLocalPlayer().GetActualPosition());
@@ -96,11 +98,15 @@ static public class VTEUtil {
 			square = 0;
 		}
 		float t;
-		if (Mathf.Abs(a) == 0) {
+		if (Mathf.Abs(a) < SMALL) {
 			UnityEngine.Assertions.Assert.IsFalse (b == 0);
 			t = -c / b;	
-		}			
-		t = (-b + Mathf.Sqrt (square)) / (2 * a); // question: Do we ever need -b - ..., or just -b + ...? What is the -b root, physically?
+		} else {		
+			t = (-b + Mathf.Sqrt (square)) / (2 * a); // question: Do we ever need -b - ..., or just -b + ...? What is the -b root, physically?
+		}
+		if (t > NOW) { 
+			t = 0;
+		}
 		return t;
 	}
 

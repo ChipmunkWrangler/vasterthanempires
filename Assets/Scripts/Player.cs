@@ -28,7 +28,6 @@ public class Player : NetworkBehaviour {
 	[SerializeField] Color selectedColor = Color.yellow;
 	[SerializeField] Color originalColor;
 	[SerializeField] Color enemyColor;
-	[SerializeField] Vector3 OFFSCREEN = new Vector3 (-100f, -100f, 0);
 	[SerializeField] DecreeCapsule decreePrefab;
 
 	public bool selected { get; private set; }
@@ -175,11 +174,14 @@ public class Player : NetworkBehaviour {
 		// TODO Handle if the apparent time sought doesn't fall within the given movement event
 		float time = VTEUtil.GetApparentTime (movementEvent.startPos, movementEvent.tgtPos, movementEvent.time, unitsPerSec, VTEUtil.GetLocalPlayer().GetActualPosition());
 		Vector3? newPosition = GetPositionAt (time);
-		transform.position = newPosition.HasValue ? newPosition.Value : OFFSCREEN;
+		transform.position = newPosition.HasValue ? newPosition.Value : VTEUtil.OFFSCREEN;
 //		print ("Apparent pos " + transform.position.ToString() + " Actual pos " + actualPosition.ToString());
 	}
 
 	Vector3? GetPositionAt(float time) {
+		if (time == 0) {
+			return null;
+		}
 		MovementEvent lastDeparture = movementEvents.FindLast( movementEvent => movementEvent.time < time );
 		if (lastDeparture == null) {
 			return null;
