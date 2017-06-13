@@ -5,7 +5,7 @@ using UnityEngine;
 static public class VTEUtil {
 	public const float infoSpeedUnitsPerSec = 1f;
 	public static Vector3 OFFSCREEN = new Vector3 (-100f, -100f, 0);
-	const float SMALL = 0.0001f;
+	const float SMALL = 0.001f;
 	static Player localPlayer;
 
 
@@ -94,9 +94,10 @@ static public class VTEUtil {
 		float b = 2f * C * C * NOW - 2f * K * S - 2f * L * W;
 		float c = K * K + L * L - C * C * NOW * NOW;
 		float square = b * b - 4f * a * c;
-		if (square < 0 && square > -SMALL) {
+		if (Mathf.Abs(square) <= SMALL) {
 			square = 0;
 		}
+		UnityEngine.Assertions.Assert.IsTrue (square >= 0);
 		float t;
 		if (Mathf.Abs(a) < SMALL) {
 			UnityEngine.Assertions.Assert.IsFalse (b == 0);
@@ -104,7 +105,7 @@ static public class VTEUtil {
 		} else {		
 			t = (-b + Mathf.Sqrt (square)) / (2 * a); // question: Do we ever need -b - ..., or just -b + ...? What is the -b root, physically?
 		}
-		if (t > NOW) { 
+		if (t > NOW + SMALL) { 
 			t = 0;
 		}
 		return t;
