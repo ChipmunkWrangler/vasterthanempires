@@ -80,6 +80,13 @@ static public class VTEUtil {
 		// What if a = b = 0?
 		// => c = 0	, which is not obviously a contradiction but makes t impossible to solve for. I guess we give up at that point.				
 
+		// Let a := (S^2 + W^2 - C^2), b := (2*C^2*NOW - 2KS - 2LW), c := (K^2 + L^2 - C^2*NOW^2)
+		// square := bb - 4ac
+		//         = (2*C^2*NOW - 2KS - 2LW)^2 - 4(S^2 + W^2 - C^2)(K^2 + L^2 - C^2*NOW^2)
+		//         = 4*C^4*NOW^2 - 2(2*C^2*NOW)(2KS + 2LW) + (2KS + 2LW)^2 - 4S^2K^2 - 4S^2L^2 + 4S^2C^2NOW^2 - 4W^2K^2 - 4W^2L^2 + 4W^2C^2*NOW^2 + 4C^2K^2 + 4C^2L^2 - 4C^4*NOW^2)
+		//         = 4*C^4*NOW^2 - 8*C^2*NOW*KS - 8*C^2*NOW*LW + 4K^2S^2 + 8KSLW + 4L^2W^2 - 4S^2K^2 - 4S^2L^2 + 4S^2C^2NOW^2 - 4W^2K^2 - 4W^2L^2 + 4W^2C^2*NOW^2 + 4C^2K^2 + 4C^2L^2 - 4C^4*NOW^2
+		//         = 4*C^4*NOW^2 - 8*C^2*NOW*KS - 8*C^2*NOW*LW + 4K^2S^2 + 8KSLW + 4L^2W^2 - 4S^2K^2 - 4S^2L^2 + 4S^2C^2NOW^2 - 4W^2K^2 - 4W^2L^2 + 4W^2C^2*NOW^2 + 4C^2K^2 + 4C^2L^2 - 4C^4*NOW^2
+		//		   
 		if (myEndPos == myStartPos) {
 			return GetApparentTime(Vector2.Distance(myStartPos, otherPos));
 		}
@@ -97,7 +104,10 @@ static public class VTEUtil {
 		if (Mathf.Abs(square) <= SMALL) {
 			square = 0;
 		}
-		UnityEngine.Assertions.Assert.IsTrue (square >= 0);
+		if (square < 0) {
+			Debug.Log ("negative square " + square); // this happens a lot when two objects are moving towards each other, and I don't know why TODO
+			square = 0;
+		}
 		float t;
 		if (Mathf.Abs(a) < SMALL) {
 			UnityEngine.Assertions.Assert.IsFalse (b == 0);
@@ -105,8 +115,13 @@ static public class VTEUtil {
 		} else {		
 			t = (-b + Mathf.Sqrt (square)) / (2 * a); // question: Do we ever need -b - ..., or just -b + ...? What is the -b root, physically?
 		}
-		if (t > NOW + SMALL) { 
-			t = 0;
+		if (t > NOW) {
+			Debug.Log ("Future " + (NOW - t).ToString());
+			t = (t > NOW + SMALL / mySpeed) ? 0 : NOW;
+		}
+		if (t < myStartTime) {
+//			Debug.Log ("Try earlier movement");
+			return -1;
 		}
 		return t;
 	}

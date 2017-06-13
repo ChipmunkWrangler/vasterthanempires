@@ -39,7 +39,7 @@ public class DecreeCapsule : MonoBehaviour {
 	}
 
 	Vector3 GetPositionAt(float time) {
-		if (time == 0) {
+		if (time <= 0) {
 			return VTEUtil.OFFSCREEN;
 		}
 		float timeRequired = Vector3.Distance(startPos, tgtPos) / unitsPerSec;

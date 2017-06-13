@@ -158,16 +158,23 @@ public class Player : NetworkBehaviour {
 
 	void UpdateApparentPosition() {		
 //		print("UpdateApparentPosition");
-		MovementEvent movementEvent = GetCurrentMovementEvent();
-		// TODO Handle if the apparent time sought doesn't fall within the given movement event
-		float time = VTEUtil.GetApparentTime (movementEvent.startPos, movementEvent.tgtPos, movementEvent.time, unitsPerSec, VTEUtil.GetLocalPlayer().GetActualPosition());
+		float time = 0;
+		for (int i = GetCurrentMovementEventIdx(); i >= 0; --i) {
+			MovementEvent movementEvent = movementEvents [i];
+			time = VTEUtil.GetApparentTime (movementEvent.startPos, movementEvent.tgtPos, movementEvent.time, unitsPerSec, VTEUtil.GetLocalPlayer ().GetActualPosition ());
+			if (time >= 0) {
+				break;
+			} else {
+				print ("Going back " + (1 + GetCurrentMovementEventIdx () - i).ToString ());
+			}
+		}
 		Vector3? newPosition = GetPositionAt (time);
 		transform.position = newPosition.HasValue ? newPosition.Value : VTEUtil.OFFSCREEN;
 //		print ("Apparent pos " + transform.position.ToString() + " Actual pos " + actualPosition.ToString());
 	}
 
 	Vector3? GetPositionAt(float time) {
-		if (time == 0) {
+		if (time <= 0) {
 			return null;
 		}
 		MovementEvent lastDeparture = movementEvents.FindLast( movementEvent => movementEvent.time < time );
