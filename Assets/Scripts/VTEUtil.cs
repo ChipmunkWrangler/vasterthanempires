@@ -32,7 +32,7 @@ static public class VTEUtil {
 		// =>     sqrt( (X - x)^2 + (Y - y)^2) / C = NOW - t
 		// =>           (X - x)^2 + (Y - y)^2      = C^2 * (NOW - t)^2                                    (call it Equation 2)
 		// For a given movement command, movement is in a straight line at a constant speed.
-		// Thus, g(t) = g(T) + V * (t - T), where T = the time of the command and V is the player's movement velocity.
+		// Thus, g(t) = g(T) + V * (t - T), where T = the time of the command and V is the player's movement velocity, V < C
 		// Let (A,B) := g(T) and (S,W) := V
 		// Then (x,y) = (A,B) + (S,W) * (t - T)
 		// =>           (X - (A + St - ST))^2 + (Y - (B + Wt - WT))^2 = C^2 * (NOW^2 - 2t * NOW + t^2)    (from Equation 2)
@@ -42,7 +42,7 @@ static public class VTEUtil {
 		// =>           K^2 - 2KSt + S^2*t^2 + L^2 - 2LWt + W^2*t^2 = C^2*NOW^2 - 2*C^2*NOW*t + C^2*t^2
 		// =>           (K^2 + L^2 - C^2*NOW^2) + (2*C^2*NOW - 2KS - 2LW)t + (S^2 + W^2 - C^2)t^2 = 0     (Call this Equation 1)
 		// Let a := (S^2 + W^2 - C^2), b := (2*C^2*NOW - 2KS - 2LW), c := (K^2 + L^2 - C^2*NOW^2)
-		// => t = (-b +/- sqrt( b^2 - 4ac)) / 2a  (Quadratic formula)
+		// => t = (-b +/- sqrt( b^2 - 4ac)) / 2a 														  (Quadratic formula -- a != 0 because V < C)
 
 		// If S & W are zero, we get the special case used in VEUtil from Equation 1:
 		// => a = K^2 + L^2 - C^2*NOW^2, b = 2*C^2*NOW, c := -C^2
@@ -69,7 +69,39 @@ static public class VTEUtil {
 		// t = (2NOWa +/- sqrt((2NOWa)^2 - 4aNOW^2a))/2a
 		// t = (2NOWa +/- sqrt(4NOW^2a^2 - 4NOW^2a^2))/2a
 		// t = 2NOWa/2a
-		// t = NOW for all a != 0. a = 0 => C^2 = S^2 + W^2 => ship travelling at lightspeed.
+		// t = NOW
+
+		// What about V == C?
+		// (K^2 + L^2 - C^2*NOW^2) + (2*C^2*NOW - 2KS - 2LW)t + (S^2 + W^2 - C^2)t^2 = 0     							(Equation 1)
+		// (K^2 + L^2 - C^2*NOW^2) + (2*C^2*NOW - 2KS - 2LW)t = 0     													(V == C)
+		// t = (K^2 + L^2 - C^2*NOW^2)/(2KS + 2LW - 2*C^2*NOW)															(unless 2KS + 2LW - 2*C^2*NOW == 0!)
+
+		// What if V == C and 2KS + 2LW - 2*C^2*NOW == 0?
+		// => K^2 + L^2 - C^2*NOW^2 = 0
+		// => (X - A + ST)^2 + (Y - B + WT)^2 - C^2*NOW^2 = 0															(definition ok K and L)
+		// => X^2 - 2X(A + ST) + (A + ST)^2 + Y^2 - 2Y(B + WT) + (B + WT)^2 - C^2*NOW^2 = 0
+		// => X^2 - 2XA + 2XST + A^2 + 2AST + S^2T^2 + Y^2 - 2YB + 2YWT + B^2 + 2BWT + W^2T^2 - C^2*NOW^2 = 0
+		// => X^2 - 2XA + 2XST + A^2 + 2AST          + Y^2 - 2YB + 2YWT + B^2 + 2BWT          = C^2*NOW^2 - S^2T^2 - W^2T^2 
+		// => X^2 - 2XA + 2XST + A^2 + 2AST          + Y^2 - 2YB + 2YWT + B^2 + 2BWT          = C^2*NOW^2 - T^2(S^2 + W^2)
+		// => X^2 - 2XA + 2XST + A^2 + 2AST          + Y^2 - 2YB + 2YWT + B^2 + 2BWT          = C^2*NOW^2 - C^2T^2
+		// => X^2 - 2XA + 2XST + A^2 + 2AST          + Y^2 - 2YB + 2YWT + B^2 + 2BWT          = C^2(NOW^2 - T^2)
+		// => X^2 - 2XA + 2XST + A^2 + 2AST          + Y^2 - 2YB + 2YWT + B^2 + 2BWT          = C^2(NOW^2 - T^2)
+		// => (X - A)^2 + 2XST       + 2AST          + (Y - B)^2 + 2YWT       + 2BWT          = C^2(NOW^2 - T^2)
+
+		// and K := X - A + ST and L := Y - B + WT. Then
+		// 0 = 2KS + 2LW - 2*C^2*NOW
+		//   = 2(X - A + ST)S + 2(Y - B + WT)W - 2*C^2*NOW
+		//   = 2XS - 2AS + 2TS^2 + 2YW - 2BW + 2TW^2 - 2C^2NOW
+		//   = 2XS - 2AS + 2T(S^2 + W^2) + 2YW - 2BW - 2C^2NOW
+		//   = XS - AS + TC^2 + YW - BW - C^2NOW
+		// (A - X)S + (B - Y)W = C^2(T - NOW)
+
+		// ((X - A + ST)^2 + (Y - B + WT)^2 - C^2*NOW^2) + (2*C^2*NOW - 2(X - A + ST)S - 2(Y - B + WT)W)t = 0     							
+		// ((X^2 - A + ST)^2 + (Y - B + WT)^2 - C^2*NOW^2) + (2*C^2*NOW - 2(X - A + ST)S - 2(Y - B + WT)W)t = 0     							
+
+
+
+		// ((X - A + ST)^2 + (Y - B + WT)^2 - C^2*NOW^2) + (2*C^2*NOW - 2(X - A + ST)S - 2(Y - B + WT)W)t + (S^2 + W^2 - C^2)t^2 = 0     							
 
 		Vector2 movementDir = (myEndPos - myStartPos).normalized;
 		float S = mySpeed * movementDir.x;
