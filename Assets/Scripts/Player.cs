@@ -43,8 +43,10 @@ public class Player : NetworkBehaviour {
 	}
 
 	public void SendDrones(Planet origin, Planet destination) {
-		// todo: feedback that click was registered
-		CmdSendDrones (origin.netId, destination.netId);
+		DecreeCapsule decreeCapsule = (DecreeCapsule)GameObject.Instantiate (decreePrefab);
+		decreeCapsule.transform.position = GetActualPosition();
+		decreeCapsule.Init (origin.transform.position);
+		CmdSendDrones (decreeCapsule.transform.position, origin.netId, destination.netId);
 	}
 
 	public Vector3 GetActualPosition() {
@@ -126,15 +128,10 @@ public class Player : NetworkBehaviour {
 		print ("CmdSetTgtPlanet " + this.netId + " to planet " + planetId);
 		RpcStartMovement (planetId, GetActualPosition());
 	}
-
-	[Command] void CmdSendDrones(NetworkInstanceId originPlanetId, NetworkInstanceId targetPlanetId) {
-		print ("CmdSendDrones from " + originPlanetId + " to " + targetPlanetId + " / " + GetActualPosition());
-		DecreeCapsule decreeCapsule = (DecreeCapsule)GameObject.Instantiate (decreePrefab);
-//		Planet originPlanet = GetPlanetFromId (originPlanetId);
-//		Planet tgtPlanet = GetPlanetFromId (targetPlanetId);
-//		decreeCapsule.Init(new SendDronesDecree(originPlanet, tgtPlanet), originPlanet.transform.position);
-		NetworkServer.Spawn (decreeCapsule.gameObject);
-		RpcSendDrones (originPlanetId, targetPlanetId, GetActualPosition(), decreeCapsule.netId);
+		
+	[Command] void CmdSendDrones(Vector3 startPos, NetworkInstanceId originPlanetId, NetworkInstanceId targetPlanetId) {
+		print ("CmdSendDrones from " + originPlanetId + " to " + targetPlanetId + " / " + startPos);
+		StartCoroutine(Decree.Send("SendDrones", startPos, GetPlanetFromId(originPlanetId), GetPlanetFromId(targetPlanetId)));
 	}
 
 	[ClientRpc] void RpcStartMovement(NetworkInstanceId planetId, Vector3 startPos) { // don't rely on actualPosition being synched at exactly this moment
@@ -154,15 +151,6 @@ public class Player : NetworkBehaviour {
 		UpdateColor ();
 	}
 		
-	[ClientRpc] void RpcSendDrones(NetworkInstanceId originPlanetId, NetworkInstanceId targetPlanetId, Vector3 startPos, NetworkInstanceId decreeId) {
-		Planet originPlanet = GetPlanetFromId (originPlanetId);
-		Planet tgtPlanet = GetPlanetFromId (targetPlanetId);
-		print ("RpcSendDrones from " + originPlanetId + " to " + targetPlanetId + " / " + startPos + " to " +  originPlanet.transform.position);
-		DecreeCapsule decreeCapsule = ClientScene.FindLocalObject (decreeId).GetComponent<DecreeCapsule> ();
-		decreeCapsule.transform.position = startPos;
-		decreeCapsule.Init(new SendDronesDecree(originPlanet, tgtPlanet), originPlanet.transform.position);
-	}
-
 	Planet GetPlanetFromId(NetworkInstanceId planetId) {
 		Assert.IsTrue (isClient);
 		return ClientScene.FindLocalObject (planetId).GetComponent<Planet> ();

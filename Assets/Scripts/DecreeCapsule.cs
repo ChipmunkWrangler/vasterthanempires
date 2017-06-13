@@ -3,50 +3,34 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class DecreeCapsule : NetworkBehaviour {
-	[SerializeField] float unitsPerSec = 1f;
+public class DecreeCapsule : MonoBehaviour {
+	public const float unitsPerSec = 1f;
 
-	Decree decree;
 	Vector3 tgtPos;
 	Vector3 startPos;
 	float startTime;
 	bool initialized;
-	bool executed;
 
-	public void Init(Decree _decree, Vector3 _tgt) {
-		decree = _decree;
+	public void Init(Vector3 _tgt) {
 		tgtPos = _tgt;
 		startPos = transform.position;
-		startTime = Time.time;
+		startTime = VTEUtil.GetTime();
 		initialized = true;
-		print ("Send Decree from " + startPos + " to " + tgtPos + " at " + startTime);
+		print ("Send Decree from " + startPos + " to " + tgtPos);
 	}
 
 	void Update () {
 		if (!initialized) {
 			return;
 		}
-		if (isServer) {
-			CheckForArrival ();
-		}
-		if (isClient) {
-			UpdateApparentPosition ();
-			if (transform.position == tgtPos) {
-				Destroy (gameObject);
-			}
+		UpdateApparentPosition ();
+		if (transform.position == tgtPos) {
+			Destroy (gameObject);
 		}
 	}
 
 	void OnDrawGizmos() {
 		Gizmos.DrawWireCube (GetActualPosition(), new Vector3 (0.2f, 0.2f, 0.2f));
-	}
-
-	void CheckForArrival() {
-		UnityEngine.Assertions.Assert.IsTrue (isServer);
-		if (!executed && GetActualPosition () == tgtPos) { 
-			decree.Execute();
-			executed = true;
-		}
 	}
 
 	void UpdateApparentPosition() {		
