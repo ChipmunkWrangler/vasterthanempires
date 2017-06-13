@@ -77,31 +77,7 @@ static public class VTEUtil {
 		// t = (K^2 + L^2 - C^2*NOW^2)/(2KS + 2LW - 2*C^2*NOW)															(unless 2KS + 2LW - 2*C^2*NOW == 0!)
 
 		// What if V == C and 2KS + 2LW - 2*C^2*NOW == 0?
-		// => K^2 + L^2 - C^2*NOW^2 = 0
-		// => (X - A + ST)^2 + (Y - B + WT)^2 - C^2*NOW^2 = 0															(definition ok K and L)
-		// => X^2 - 2X(A + ST) + (A + ST)^2 + Y^2 - 2Y(B + WT) + (B + WT)^2 - C^2*NOW^2 = 0
-		// => X^2 - 2XA + 2XST + A^2 + 2AST + S^2T^2 + Y^2 - 2YB + 2YWT + B^2 + 2BWT + W^2T^2 - C^2*NOW^2 = 0
-		// => X^2 - 2XA + 2XST + A^2 + 2AST          + Y^2 - 2YB + 2YWT + B^2 + 2BWT          = C^2*NOW^2 - S^2T^2 - W^2T^2 
-		// => X^2 - 2XA + 2XST + A^2 + 2AST          + Y^2 - 2YB + 2YWT + B^2 + 2BWT          = C^2*NOW^2 - T^2(S^2 + W^2)
-		// => X^2 - 2XA + 2XST + A^2 + 2AST          + Y^2 - 2YB + 2YWT + B^2 + 2BWT          = C^2*NOW^2 - C^2T^2
-		// => X^2 - 2XA + 2XST + A^2 + 2AST          + Y^2 - 2YB + 2YWT + B^2 + 2BWT          = C^2(NOW^2 - T^2)
-		// => X^2 - 2XA + 2XST + A^2 + 2AST          + Y^2 - 2YB + 2YWT + B^2 + 2BWT          = C^2(NOW^2 - T^2)
-		// => (X - A)^2 + 2XST       + 2AST          + (Y - B)^2 + 2YWT       + 2BWT          = C^2(NOW^2 - T^2)
-
-		// and K := X - A + ST and L := Y - B + WT. Then
-		// 0 = 2KS + 2LW - 2*C^2*NOW
-		//   = 2(X - A + ST)S + 2(Y - B + WT)W - 2*C^2*NOW
-		//   = 2XS - 2AS + 2TS^2 + 2YW - 2BW + 2TW^2 - 2C^2NOW
-		//   = 2XS - 2AS + 2T(S^2 + W^2) + 2YW - 2BW - 2C^2NOW
-		//   = XS - AS + TC^2 + YW - BW - C^2NOW
-		// (A - X)S + (B - Y)W = C^2(T - NOW)
-
-		// ((X - A + ST)^2 + (Y - B + WT)^2 - C^2*NOW^2) + (2*C^2*NOW - 2(X - A + ST)S - 2(Y - B + WT)W)t = 0     							
-		// ((X^2 - A + ST)^2 + (Y - B + WT)^2 - C^2*NOW^2) + (2*C^2*NOW - 2(X - A + ST)S - 2(Y - B + WT)W)t = 0     							
-
-
-
-		// ((X - A + ST)^2 + (Y - B + WT)^2 - C^2*NOW^2) + (2*C^2*NOW - 2(X - A + ST)S - 2(Y - B + WT)W)t + (S^2 + W^2 - C^2)t^2 = 0     							
+		// => K^2 + L^2 - C^2*NOW^2 = 0	, which is not obviously a contradiction but makes t impossible to solve for. I guess we give up at that point.				
 
 		Vector2 movementDir = (myEndPos - myStartPos).normalized;
 		float S = mySpeed * movementDir.x;
@@ -111,17 +87,18 @@ static public class VTEUtil {
 		float C = infoSpeedUnitsPerSec;
 		float NOW = GetTime ();
 		float a = S * S + W * W - C * C;
-		float b = 2 * C * C * NOW - 2 * K * S - 2 * L * W;
+		float b = 2f * C * C * NOW - 2f * K * S - 2f * L * W;
 		float c = K * K + L * L - C * C * NOW * NOW;
-		float square = b * b - 4 * a * c;
+		float square = b * b - 4f * a * c;
 		if (square < 0 && square > -SMALL) {
 			square = 0;
 		}
-		// TODO Special case for unitsPerSec = C 
-		// => a = 0 
-		// =>  t = -(K^2 + L^2 - C^2*NOW^2) / (2*C^2*NOW - 2KS - 2LW) for (C^2*NOW != KS + LW), in which case TODO
-
-		float t = (-b - Mathf.Sqrt (square)) / (2 * a);
+		float t;
+		if (Mathf.Abs(a) == 0) {
+			UnityEngine.Assertions.Assert.IsFalse (b == 0);
+			t = -c / b;	
+		}			
+		t = (-b - Mathf.Sqrt (square)) / (2 * a);
 		return t;
 	}
 
