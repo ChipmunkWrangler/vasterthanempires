@@ -71,13 +71,16 @@ static public class VTEUtil {
 		// t = 2NOWa/2a
 		// t = NOW
 
-		// What about V == C?
+		// What about a == 0 (which implies V == C)?
 		// c + bt + at^2 = 0     							
-		// c + bt = 0 											    													(V == C => a = 0)
+		// c + bt = 0 											    													(a = 0)
 		// t = -c/b																										(unless b == 0)
 		// What if a = b = 0?
 		// => c = 0	, which is not obviously a contradiction but makes t impossible to solve for. I guess we give up at that point.				
 
+		if (myEndPos == myStartPos) {
+			return GetApparentTime(Vector2.Distance(myStartPos, otherPos));
+		}
 		Vector2 movementDir = (myEndPos - myStartPos).normalized;
 		float S = mySpeed * movementDir.x;
 		float W = mySpeed * movementDir.y;
