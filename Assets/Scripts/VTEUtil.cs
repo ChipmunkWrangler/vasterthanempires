@@ -72,12 +72,11 @@ static public class VTEUtil {
 		// t = NOW
 
 		// What about V == C?
-		// (K^2 + L^2 - C^2*NOW^2) + (2*C^2*NOW - 2KS - 2LW)t + (S^2 + W^2 - C^2)t^2 = 0     							(Equation 1)
-		// (K^2 + L^2 - C^2*NOW^2) + (2*C^2*NOW - 2KS - 2LW)t = 0     													(V == C)
-		// t = (K^2 + L^2 - C^2*NOW^2)/(2KS + 2LW - 2*C^2*NOW)															(unless 2KS + 2LW - 2*C^2*NOW == 0!)
-
-		// What if V == C and 2KS + 2LW - 2*C^2*NOW == 0?
-		// => K^2 + L^2 - C^2*NOW^2 = 0	, which is not obviously a contradiction but makes t impossible to solve for. I guess we give up at that point.				
+		// c + bt + at^2 = 0     							
+		// c + bt = 0 											    													(V == C => a = 0)
+		// t = -c/b																										(unless b == 0)
+		// What if a = b = 0?
+		// => c = 0	, which is not obviously a contradiction but makes t impossible to solve for. I guess we give up at that point.				
 
 		Vector2 movementDir = (myEndPos - myStartPos).normalized;
 		float S = mySpeed * movementDir.x;
@@ -98,7 +97,7 @@ static public class VTEUtil {
 			UnityEngine.Assertions.Assert.IsFalse (b == 0);
 			t = -c / b;	
 		}			
-		t = (-b - Mathf.Sqrt (square)) / (2 * a);
+		t = (-b + Mathf.Sqrt (square)) / (2 * a); // question: Do we ever need -b - ..., or just -b + ...? What is the -b root, physically?
 		return t;
 	}
 

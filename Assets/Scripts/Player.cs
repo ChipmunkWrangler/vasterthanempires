@@ -172,6 +172,7 @@ public class Player : NetworkBehaviour {
 	void UpdateApparentPosition() {		
 //		print("UpdateApparentPosition");
 		MovementEvent movementEvent = GetCurrentMovementEvent();
+		// TODO Handle if the apparent time sought doesn't fall within the given movement event
 		float time = VTEUtil.GetApparentTime (movementEvent.startPos, movementEvent.tgtPos, movementEvent.time, unitsPerSec, VTEUtil.GetLocalPlayer().GetActualPosition());
 		Vector3? newPosition = GetPositionAt (time);
 		transform.position = newPosition.HasValue ? newPosition.Value : OFFSCREEN;
