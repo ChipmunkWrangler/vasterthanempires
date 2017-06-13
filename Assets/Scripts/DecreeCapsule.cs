@@ -57,7 +57,7 @@ public class DecreeCapsule : NetworkBehaviour {
 	}
 
 	public Vector3 GetActualPosition() {
-		return GetPositionAt (VTEUtil.GetApparentTime ());
+		return GetPositionAt (VTEUtil.GetTime ());
 	}
 
 	[ClientRpc] void RpcEndMovement() {

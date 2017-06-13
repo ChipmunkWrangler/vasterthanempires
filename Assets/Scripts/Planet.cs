@@ -11,7 +11,7 @@ public class Planet : NetworkBehaviour {
 		public float time { get; private set; }
 		public ConquestEvent(NetworkInstanceId _ownerId) { 
 			ownerId = _ownerId;
-			time = VTEUtil.GetApparentTime();
+			time = VTEUtil.GetTime();
 		}
 	}
 
