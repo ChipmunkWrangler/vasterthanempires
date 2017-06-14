@@ -41,10 +41,9 @@ public class Planet : NetworkBehaviour {
 	}
 
 	public int RemoveDrones() {
-		return 0;
-//		int numDrones = GetDronesAt (VTEUtil.GetTime ());
-//		Conquer(GetOwnerIdAt(VTEUtil.GetTime())); // HACK
-//		return numDrones;
+		int numDrones = GetDronesAt (VTEUtil.GetTime ());
+		Conquer(GetOwnerIdAt(VTEUtil.GetTime())); // HACK
+		return numDrones;
 	}
 
 	void Start () {		
