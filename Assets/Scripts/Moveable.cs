@@ -17,8 +17,9 @@ public class Moveable : NetworkBehaviour {
 
 	Material material;
 	List<MovementEvent> movementEvents; // last elements are the most recent
+	NetworkInstanceId commanderId;
 
-	public void SetTargetPlanet(Planet newPlanet) {
+	public void UserSaysSetTargetPlanet(Planet newPlanet) {
 		print ("SetTargetPlanet at " + VTEUtil.GetTime());
 		SetSelected (false);
 		CmdSetTargetPlanet (newPlanet.netId);
@@ -29,14 +30,17 @@ public class Moveable : NetworkBehaviour {
 		return GetPositionAt (VTEUtil.GetTime ()).Value;
 	}
 
+	public void Init(NetworkInstanceId _commanderId ) {
+		commanderId = _commanderId;
+	}
+
 	void Start() {
 		material = GetComponent<MeshRenderer> ().material;
-		if (!isLocalPlayer) {
+		if (VTEUtil.GetLocalPlayerComponent<NetworkBehaviour>().netId != commanderId) {
 			originalColor = enemyColor;
 			material.color = enemyColor;
 		}
-		movementEvents = new List<MovementEvent> ();
-		AddMovementEvent (transform.position, transform.position);
+		InitMovementEvents ();
 		UpdateColor ();
 	}
 
@@ -123,7 +127,7 @@ public class Moveable : NetworkBehaviour {
 		if (time <= 0) {
 			return null;
 		}
-		MovementEvent lastDeparture = movementEvents.FindLast( movementEvent => movementEvent.time < time );
+		MovementEvent lastDeparture = movementEvents.FindLast( movementEvent => movementEvent.time <= time );
 		if (lastDeparture == null) {
 			return null;
 		}
@@ -136,21 +140,28 @@ public class Moveable : NetworkBehaviour {
 	}
 
 	void AddMovementEvent(Vector2 startPosition, Vector2 tgtPosition, Planet tgtPlanet = null) {
+		InitMovementEvents ();
 		movementEvents.Add (new MovementEvent (startPosition, tgtPosition, tgtPlanet));
-		print ("Creating Movement Event for player " + this.netId.Value.ToString () + " : total = " + movementEvents.Count);
+		print ("Creating Movement Event for ship " + this.netId.Value.ToString () + " : total = " + movementEvents.Count);
 		print (movementEvents [movementEvents.Count - 1].ToString ());			
 	}
 
+	void InitMovementEvents() {
+		if (movementEvents == null) {
+			movementEvents = new List<MovementEvent> ();
+			AddMovementEvent (transform.position, transform.position);
+		}
+	}
 
 	[Command] void CmdSetTargetPlanet(NetworkInstanceId planetId) {
-		print ("CmdSetTgtPlanet " + this.netId + " to planet " + planetId);
+		print ("CmdSetTgtPlanet: ship " + this.netId + " to planet " + planetId);
 		RpcStartMovement (planetId, GetActualPosition());
 	}
 
-	[ClientRpc] void RpcStartMovement(NetworkInstanceId planetId, Vector3 startPos) { // don't rely on actualPosition being synched at exactly this moment
+	[ClientRpc] public void RpcStartMovement(NetworkInstanceId planetId, Vector3 startPos) { // don't rely on actualPosition being synched at exactly this moment
 		print ("RpcStartMovement ");
 		Planet tgtPlanet = ClientScene.FindLocalObject (planetId).GetComponent<Planet> ();
-		Vector3 tgtPos = tgtPlanet.GetParkingSpace (this.netId);
+		Vector3 tgtPos = tgtPlanet.GetParkingSpace (commanderId);
 		AddMovementEvent(startPos, tgtPos, tgtPlanet); 
 		UpdateColor ();
 	}
@@ -160,7 +171,7 @@ public class Moveable : NetworkBehaviour {
 		print ("Arrive at " + VTEUtil.GetTime() + " after " + (VTEUtil.GetTime() - movementEvent.time));
 		print ("Completing movement " + i.ToString () + " : " + movementEvent.ToString ());
 		movementEvent.done = true;
-		movementEvent.tgtPlanet.Conquer (this.netId);
+		movementEvent.tgtPlanet.Conquer (commanderId);
 		UpdateColor ();
 	}
 

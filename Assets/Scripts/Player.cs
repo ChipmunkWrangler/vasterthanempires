@@ -17,6 +17,7 @@ public class Player : NetworkBehaviour {
 		if (!isLocalPlayer) {
 			gameObject.GetComponent<Collider> ().enabled = false;
 		}
+		GetComponent<Moveable> ().Init(this.netId);
 	}
 
 	void SendDecreeCapsule(Vector3 tgtPos) {

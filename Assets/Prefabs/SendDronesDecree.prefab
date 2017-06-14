@@ -84,5 +84,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c102c7e4ae9e4532864d2ffd7eb2045, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  decreePrefab: {fileID: 114167325605231786, guid: 0a4007463d38d4b43a625c4642313355,
+  fleetPrefab: {fileID: 114724900312226132, guid: f29d94578787341d7bb025343ef88f31,
     type: 2}

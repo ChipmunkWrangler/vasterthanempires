@@ -39,6 +39,14 @@ public class Planet : NetworkBehaviour {
 	public NetworkInstanceId GetOwnerIdAt(float time) {
 		return GetLastConquestEventBefore (time).ownerId;
 	}
+
+	public int RemoveDrones() {
+		return 0;
+//		int numDrones = GetDronesAt (VTEUtil.GetTime ());
+//		Conquer(GetOwnerIdAt(VTEUtil.GetTime())); // HACK
+//		return numDrones;
+	}
+
 	void Start () {		
 		material = GetComponent<MeshRenderer> ().material;
 		resourceDisplay.transform.position = Camera.main.WorldToScreenPoint (transform.position);
@@ -52,7 +60,7 @@ public class Planet : NetworkBehaviour {
 	void OnMouseUpAsButton() {
 		Moveable player = VTEUtil.GetLocalPlayerComponent<Moveable> ();
 		if (player.selected) {
-			player.SetTargetPlanet (this);
+			player.UserSaysSetTargetPlanet (this);
 		} else {
 			GameObject origin = selection.GetSelected ();
 			if (origin == null) {
