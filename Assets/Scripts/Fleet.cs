@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 public class Fleet : NetworkBehaviour {
 	public void Init(NetworkInstanceId commanderId, int _size, Planet destination) {
+		GetComponent<Moveable> ().commanderId = commanderId;
 		GetComponent<Moveable>().RpcStartMovement (destination.netId, transform.position);
-		GetComponent<Moveable> ().Init(commanderId);
 	}
 }

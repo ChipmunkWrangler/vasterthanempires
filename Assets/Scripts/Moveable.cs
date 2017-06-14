@@ -17,7 +17,7 @@ public class Moveable : NetworkBehaviour {
 
 	Material material;
 	List<MovementEvent> movementEvents; // last elements are the most recent
-	NetworkInstanceId commanderId;
+	[SyncVar(hook="OnSyncCommanderId")] public NetworkInstanceId commanderId;
 
 	public void UserSaysSetTargetPlanet(Planet newPlanet) {
 		print ("SetTargetPlanet at " + VTEUtil.GetTime());
@@ -29,17 +29,13 @@ public class Moveable : NetworkBehaviour {
 	public Vector3 GetActualPosition() {
 		return GetPositionAt (VTEUtil.GetTime ()).Value;
 	}
-
-	public void Init(NetworkInstanceId _commanderId ) {
-		commanderId = _commanderId;
+		
+	void OnSyncCommanderId(NetworkInstanceId _value) {
+		commanderId = _value;
+		UpdateColor ();
 	}
 
 	void Start() {
-		material = GetComponent<MeshRenderer> ().material;
-		if (VTEUtil.GetLocalPlayerComponent<NetworkBehaviour>().netId != commanderId) {
-			originalColor = enemyColor;
-			material.color = enemyColor;
-		}
 		InitMovementEvents ();
 		UpdateColor ();
 	}
@@ -76,7 +72,7 @@ public class Moveable : NetworkBehaviour {
 	}
 
 	bool IsMoving() {
-		return !GetCurrentMovementEvent ().done;
+		return movementEvents != null && !GetCurrentMovementEvent ().done;
 	}
 
 	Vector3 GetTgtPos() {
@@ -94,10 +90,13 @@ public class Moveable : NetworkBehaviour {
 	}
 
 	void UpdateColor() {
-		if (!isLocalPlayer) {
-			return;
+		if (!material) {
+			material = GetComponent<MeshRenderer> ().material;
 		}
-		if (selected) {
+			
+		if (!IsControlledByLocalPlayer()) {
+			material.color = enemyColor;
+		} else if (selected) {
 			material.color = selectedColor;
 		} else if (IsMoving() ) {
 			material.color = movingColor;
@@ -153,6 +152,10 @@ public class Moveable : NetworkBehaviour {
 		}
 	}
 
+	bool IsControlledByLocalPlayer() {
+		return VTEUtil.GetLocalPlayerComponent<NetworkBehaviour> ().netId == commanderId;
+	}
+		
 	[Command] void CmdSetTargetPlanet(NetworkInstanceId planetId) {
 		print ("CmdSetTgtPlanet: ship " + this.netId + " to planet " + planetId);
 		RpcStartMovement (planetId, GetActualPosition());
