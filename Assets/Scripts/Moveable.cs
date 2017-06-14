@@ -14,7 +14,6 @@ public class Moveable : NetworkBehaviour {
 	[SerializeField] Color originalColor;
 	[SerializeField] Color enemyColor;
 
-
 	Material material;
 	List<MovementEvent> movementEvents; // last elements are the most recent
 	[SyncVar(hook="OnSyncCommanderId")] public NetworkInstanceId commanderId;
@@ -39,8 +38,7 @@ public class Moveable : NetworkBehaviour {
 		InitMovementEvents ();
 		UpdateColor ();
 	}
-
-
+		
 	void Update() {
 		if (isServer) {
 			CheckForArrival ();
@@ -49,8 +47,6 @@ public class Moveable : NetworkBehaviour {
 			transform.position = (isLocalPlayer) ? GetActualPosition() : GetApparentPosition ();
 		}
 	}
-
-
 
 	void CheckForArrival() {
 		Assert.IsTrue (isServer);
@@ -126,6 +122,7 @@ public class Moveable : NetworkBehaviour {
 		if (time <= 0) {
 			return null;
 		}
+		InitMovementEvents ();
 		MovementEvent lastDeparture = movementEvents.FindLast( movementEvent => movementEvent.time <= time );
 		if (lastDeparture == null) {
 			return null;
@@ -162,7 +159,7 @@ public class Moveable : NetworkBehaviour {
 	}
 
 	[ClientRpc] public void RpcStartMovement(NetworkInstanceId planetId, Vector3 startPos) { // don't rely on actualPosition being synched at exactly this moment
-		print ("RpcStartMovement ");
+		print ("RpcStartMovement " + startPos);
 		Planet tgtPlanet = ClientScene.FindLocalObject (planetId).GetComponent<Planet> ();
 		Vector3 tgtPos = tgtPlanet.GetParkingSpace (commanderId);
 		AddMovementEvent(startPos, tgtPos, tgtPlanet); 
