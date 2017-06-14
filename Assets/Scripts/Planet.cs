@@ -50,8 +50,9 @@ public class Planet : NetworkBehaviour {
 	}
 
 	void OnMouseUpAsButton() {
-		if (VTEUtil.GetLocalPlayer ().selected) {
-			VTEUtil.GetLocalPlayer ().SetTargetPlanet (this);
+		Moveable player = VTEUtil.GetLocalPlayerComponent<Moveable> ();
+		if (player.selected) {
+			player.SetTargetPlanet (this);
 		} else {
 			GameObject origin = selection.GetSelected ();
 			if (origin == null) {
@@ -73,7 +74,7 @@ public class Planet : NetworkBehaviour {
 	}
 
 	void SelectTarget(GameObject origin) {
-		VTEUtil.GetLocalPlayer ().SendDrones (origin.GetComponent<Planet> (), this);
+		VTEUtil.GetLocalPlayerComponent<Player> ().SendDrones (origin.GetComponent<Planet> (), this);
 		Deselect ();
 	}
 
@@ -115,7 +116,7 @@ public class Planet : NetworkBehaviour {
 		NetworkInstanceId ownerId = GetOwnerIdAt(time);
 		if (ownerId == NetworkInstanceId.Invalid) {
 			baseColor = neutralColor;
-		} else if (ownerId == VTEUtil.GetLocalPlayer ().netId) {
+		} else if (ownerId == VTEUtil.GetLocalPlayerComponent<NetworkBehaviour> ().netId) {
 			baseColor = playerColor;
 		}
 		material.color = baseColor * (1f - distToPlayer / maxDist);

@@ -34,7 +34,7 @@ public class DecreeCapsule : MonoBehaviour {
 	}
 
 	void UpdateApparentPosition() {		
-		float time = VTEUtil.GetApparentTime (startPos, tgtPos, startTime, unitsPerSec, VTEUtil.GetLocalPlayer().GetActualPosition());
+		float time = VTEUtil.GetApparentTime (startPos, tgtPos, startTime, unitsPerSec, VTEUtil.GetLocalPlayerComponent<Moveable>().GetActualPosition());
 		transform.position = GetPositionAt (time);
 	}
 

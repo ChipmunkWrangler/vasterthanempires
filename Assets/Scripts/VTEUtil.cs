@@ -1,16 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 static public class VTEUtil {
 	public const float infoSpeedUnitsPerSec = 1f;
 	public static Vector3 OFFSCREEN = new Vector3 (-100f, -100f, 0);
 	const float SMALL = 0.001f;
-	static Player localPlayer;
+	static GameObject localPlayer;
 
 
 	static public float GetDistToLocalPlayer(Vector3 pos) {
-		return Vector2.Distance (pos, GetLocalPlayer().GetActualPosition());
+		return Vector2.Distance (pos, GetLocalPlayerComponent<Moveable>().GetActualPosition());
 	}
 		
 	static public float GetTime() {
@@ -126,16 +127,16 @@ static public class VTEUtil {
 		return t;
 	}
 
-	static public Player GetLocalPlayer() {
+	static public T GetLocalPlayerComponent<T>() {
 		if (!localPlayer) {
 			GameObject[] players = GameObject.FindGameObjectsWithTag ("Player");
 			foreach (GameObject o in players) {
-				localPlayer = o.GetComponent<Player> ();
-				if (localPlayer.isLocalPlayer) {
+				if (o.GetComponent<NetworkIdentity>().isLocalPlayer) {
+					localPlayer = o;
 					break;
 				}
 			}
 		}
-		return localPlayer;
+		return localPlayer.GetComponent<T> ();
 	}
 }
