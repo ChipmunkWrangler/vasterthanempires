@@ -8,6 +8,8 @@ public class Player : NetworkBehaviour {
 	[SerializeField] SendDronesDecree sendDronesDecreePrefab;
 	[SerializeField] DecreeCapsule decreeCapsulePrefab;
 
+	bool firstUpdate = true;
+
 	public void SendDrones(Planet origin, Planet destination) {		
 		SendDecreeCapsule (origin.transform.position);
 		CmdSendDrones (this.netId, origin.netId, destination.netId);
@@ -18,11 +20,30 @@ public class Player : NetworkBehaviour {
 			gameObject.GetComponent<Collider> ().enabled = false;
 		}
 		GetComponent<Moveable> ().commanderId = this.netId;
+		ConquerInitialPlanet ();
+	}
+
+	void Update() {
+		if (firstUpdate) {
+			ConquerInitialPlanet ();
+			firstUpdate = false;
+		}
 	}
 
 	void SendDecreeCapsule(Vector3 tgtPos) {
 		DecreeCapsule decreeCapsule = (DecreeCapsule)GameObject.Instantiate (decreeCapsulePrefab);
 		decreeCapsule.GoTo (GetComponent<Moveable>().GetActualPosition(), tgtPos);
+	}
+
+	void ConquerInitialPlanet() {
+		foreach (GameObject planet in GameObject.FindGameObjectsWithTag ("Planet")) {
+			if (planet.transform.position == transform.position) {
+				Planet closestPlanet = planet.GetComponent<Planet>();
+				Assert.IsTrue (closestPlanet.GetOwnerIdAt (VTEUtil.GetTime ()) == NetworkInstanceId.Invalid);
+				GetComponent<Moveable>().UserSaysSetTargetPlanet (closestPlanet);
+				break;
+			}
+		}
 	}
 
 	[Command] void CmdSendDrones(NetworkInstanceId commanderId, NetworkInstanceId originPlanetId, NetworkInstanceId targetPlanetId) {

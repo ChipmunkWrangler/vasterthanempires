@@ -24,9 +24,10 @@ GameObject:
   - component: {fileID: 23566922578046806}
   - component: {fileID: 114002964676875326}
   - component: {fileID: 114238847611339098}
+  - component: {fileID: 114330917662164566}
   m_Layer: 0
   m_Name: Planet
-  m_TagString: Untagged
+  m_TagString: Planet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -39,7 +40,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4005179884731538}
-  - component: {fileID: 114067105429338596}
   m_Layer: 0
   m_Name: ParkingSpace2
   m_TagString: Untagged
@@ -55,7 +55,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4018514118176454}
-  - component: {fileID: 114315814462204238}
   m_Layer: 0
   m_Name: ParkingSpace1
   m_TagString: Untagged
@@ -160,18 +159,7 @@ MonoBehaviour:
   maxDist: 10.2
   playerColor: {r: 0, g: 0.7372549, b: 0.003921569, a: 1}
   enemyColor: {r: 1, g: 0, b: 0, a: 1}
-  selection: {fileID: 1281658257735804, guid: 37d2dc3dbcac54112ab67c8a970537e3, type: 2}
---- !u!114 &114067105429338596
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1570183461216698}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1050975500, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  selection: {fileID: 0}
 --- !u!114 &114238847611339098
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -204,12 +192,12 @@ MonoBehaviour:
     i15: 38
   m_ServerOnly: 0
   m_LocalPlayerAuthority: 0
---- !u!114 &114315814462204238
+--- !u!114 &114330917662164566
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1701088178796294}
+  m_GameObject: {fileID: 1001609715189134}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -1050975500, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
