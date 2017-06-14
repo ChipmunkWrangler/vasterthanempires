@@ -10,13 +10,17 @@ public class Fleet : NetworkBehaviour {
 	public void Init(NetworkInstanceId commanderId, int _numDrones, Planet destination) {
 		numDrones = _numDrones;
 		baseScale = transform.localScale.x;
-		UpdateSize ();
+		RpcUpdateSize (GetNewSize());
 		GetComponent<Moveable> ().commanderId = commanderId;
 		GetComponent<Moveable>().RpcStartMovement (destination.netId, transform.position);
 	}
 
-	void UpdateSize() {
-		transform.localScale = Vector3.one * baseScale * Mathf.Pow (numDrones, 1f / 3f);
+	[ClientRpc] void RpcUpdateSize(float newScale) {
+		transform.localScale = Vector3.one * newScale;
+	}
+
+	float GetNewSize() {
+		return baseScale * Mathf.Pow (numDrones, 1f / 3f);
 	}
 		
 }
