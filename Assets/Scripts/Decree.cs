@@ -15,9 +15,9 @@ public abstract class Decree : NetworkBehaviour {
 		Vector3 tgtPos = planet.transform.position;
 		float travelTime = Vector2.Distance(startPos, tgtPos) / DecreeCapsule.unitsPerSec;
 		yield return new WaitForSeconds (travelTime);
-//		if (planet.GetOwnerIdAt(VTEUtil.GetTime()) == commander.netId) {
+		if (planet.GetOwnerIdAt(VTEUtil.GetTime()) == commander.netId) {
 			Execute();
-//		}
+		}
 		Destroy (gameObject);
 	}
 }
