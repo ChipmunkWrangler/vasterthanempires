@@ -21,7 +21,9 @@ public class SendDronesDecree : Decree {
 		print ("Send drones");
 		Fleet fleet = GameObject.Instantiate (fleetPrefab, origin.transform.position, Quaternion.identity);
 		NetworkServer.Spawn (fleet.gameObject);
-		fleet.Init(commander.netId, origin.RemoveDrones (), destination);
+		int numDrones = origin.GetNumDrones ();
+		fleet.Init(commander.netId, numDrones, destination);
+		origin.RpcAddDrones (-numDrones);
 	}
 				
 }

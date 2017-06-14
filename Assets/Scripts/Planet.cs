@@ -6,11 +6,13 @@ using UnityEngine.Networking;
 using UnityEngine.Assertions;
 
 public class Planet : NetworkBehaviour {
-	class ConquestEvent {
+	class DroneEvent {
 		public NetworkInstanceId ownerId { get; private set; }
 		public float time { get; private set; }
-		public ConquestEvent(NetworkInstanceId _ownerId) { 
+		public int numDrones { get; private set; }
+		public DroneEvent(NetworkInstanceId _ownerId, int newNumDrones) { 
 			ownerId = _ownerId;
+			numDrones = newNumDrones;
 			time = VTEUtil.GetTime();
 		}
 	}
@@ -23,13 +25,13 @@ public class Planet : NetworkBehaviour {
 	[SerializeField] Color enemyColor;
 	[SerializeField] PlanetSelector selection;
 
-	List<ConquestEvent> conquestEvents;
+	List<DroneEvent> droneEvents;
 	Material material;
 	Color neutralColor;
-	ConquestEvent initialEvent;
+	DroneEvent initialEvent;
 
 	public void Conquer(NetworkInstanceId conquerorId) {
-		conquestEvents.Add(new ConquestEvent(conquerorId));
+		droneEvents.Add(new DroneEvent(conquerorId, 0));
 	}
 
 	public Vector3 GetParkingSpace(NetworkInstanceId shipId) {
@@ -40,10 +42,12 @@ public class Planet : NetworkBehaviour {
 		return GetLastConquestEventBefore (time).ownerId;
 	}
 
-	public int RemoveDrones() {
-		int numDrones = GetDronesAt (VTEUtil.GetTime ());
-		Conquer(GetOwnerIdAt(VTEUtil.GetTime())); // HACK
-		return numDrones;
+	public int GetNumDrones() {
+		return GetDronesAt (VTEUtil.GetTime ());
+	}
+
+	[ClientRpc] public void RpcAddDrones(int numDronestoAdd) {
+		droneEvents.Add(new DroneEvent(GetOwnerIdAt(VTEUtil.GetTime()), GetNumDrones() + numDronestoAdd));
 	}
 
 	void Start () {		
@@ -51,8 +55,8 @@ public class Planet : NetworkBehaviour {
 		resourceDisplay.transform.position = Camera.main.WorldToScreenPoint (transform.position);
 		resourceDisplay.text = "";
 		neutralColor = material.color;
-		conquestEvents = new List<ConquestEvent> ();
-		initialEvent = new ConquestEvent (NetworkInstanceId.Invalid);
+		droneEvents = new List<DroneEvent> ();
+		initialEvent = new DroneEvent(NetworkInstanceId.Invalid, 0);
 		StartCoroutine (UpdateDisplay ());
 	}
 
@@ -102,7 +106,7 @@ public class Planet : NetworkBehaviour {
 		
 	int GetDronesAt(float time) {
 		int numDrones = 0;
-		ConquestEvent lastConquest = GetLastConquestEventBefore (time);
+		DroneEvent lastConquest = GetLastConquestEventBefore (time);
 		if (lastConquest.ownerId != NetworkInstanceId.Invalid) {
 			float timeSinceLastConquest = time - lastConquest.time;
 			numDrones = Mathf.FloorToInt (timeSinceLastConquest / secsPerDrone);
@@ -110,8 +114,8 @@ public class Planet : NetworkBehaviour {
 		return numDrones;
 	}
 
-	ConquestEvent GetLastConquestEventBefore(float time) {
-		ConquestEvent ce = conquestEvents.FindLast( conquestEvent => conquestEvent.time < time);
+	DroneEvent GetLastConquestEventBefore(float time) {
+		DroneEvent ce = droneEvents.FindLast( conquestEvent => conquestEvent.time < time);
 		if (ce == null) {
 			ce = initialEvent;
 		}
