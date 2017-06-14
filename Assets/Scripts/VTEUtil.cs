@@ -108,16 +108,16 @@ static public class VTEUtil {
 			Debug.Log ("negative square " + square); // this happens a lot when two objects are moving towards each other, and I don't know why TODO
 			square = 0;
 		}
-		float t;
+		float t = 0;
 		if (Mathf.Abs(a) < SMALL) {
-			UnityEngine.Assertions.Assert.IsFalse (b == 0);
-			t = -c / b;	
+			if (b != 0) {
+				t = -c / b;	
+			} 
 		} else {		
 			t = (-b + Mathf.Sqrt (square)) / (2 * a); // question: Do we ever need -b - ..., or just -b + ...? What is the -b root, physically?
 		}
-		if (t > NOW) {
-			Debug.Log ("Future " + (NOW - t).ToString());
-			t = (t > NOW + SMALL / mySpeed) ? 0 : NOW;
+		if (NOW < t && t < NOW + SMALL / mySpeed) {
+			t = NOW;
 		}
 		if (t < myStartTime) {
 //			Debug.Log ("Try earlier movement");

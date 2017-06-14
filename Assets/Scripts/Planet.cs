@@ -36,6 +36,9 @@ public class Planet : NetworkBehaviour {
 		return transform.GetChild ((int)shipId.Value % transform.childCount).position;
 	}
 
+	public NetworkInstanceId GetOwnerIdAt(float time) {
+		return GetLastConquestEventBefore (time).ownerId;
+	}
 	void Start () {		
 		material = GetComponent<MeshRenderer> ().material;
 		resourceDisplay.transform.position = Camera.main.WorldToScreenPoint (transform.position);
@@ -106,15 +109,10 @@ public class Planet : NetworkBehaviour {
 		}
 		return ce;
 	}
-
-	bool IsFriendly(float time) {
-		NetworkInstanceId ownerId = GetLastConquestEventBefore (time).ownerId;
-		return ownerId == VTEUtil.GetLocalPlayer ().netId;
-	}
-					
+							
 	void UpdateColor(float time, float distToPlayer) {
 		Color baseColor = enemyColor;
-		NetworkInstanceId ownerId = GetLastConquestEventBefore (time).ownerId;
+		NetworkInstanceId ownerId = GetOwnerIdAt(time);
 		if (ownerId == NetworkInstanceId.Invalid) {
 			baseColor = neutralColor;
 		} else if (ownerId == VTEUtil.GetLocalPlayer ().netId) {

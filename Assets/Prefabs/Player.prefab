@@ -143,6 +143,7 @@ MonoBehaviour:
   selectedColor: {r: 0.6764706, g: 1, b: 0.69208926, a: 1}
   originalColor: {r: 0.00740701, g: 1, b: 1, a: 1}
   enemyColor: {r: 1, g: 0, b: 0, a: 1}
-  OFFSCREEN: {x: -100, y: -100, z: 0}
-  decreePrefab: {fileID: 114167325605231786, guid: 0a4007463d38d4b43a625c4642313355,
+  sendDronesDecreePrefab: {fileID: 114622956583778734, guid: 087cdb6c154084f04ba8ac3e20a303c5,
+    type: 2}
+  decreeCapsulePrefab: {fileID: 114167325605231786, guid: 0a4007463d38d4b43a625c4642313355,
     type: 2}

@@ -11,9 +11,9 @@ public class DecreeCapsule : MonoBehaviour {
 	float startTime;
 	bool initialized;
 
-	public void Init(Vector3 _tgt) {
+	public void GoTo(Vector3 _startPos, Vector3 _tgt) {
 		tgtPos = _tgt;
-		startPos = transform.position;
+		startPos = _startPos;
 		startTime = VTEUtil.GetTime();
 		initialized = true;
 		print ("Send Decree from " + startPos + " to " + tgtPos);

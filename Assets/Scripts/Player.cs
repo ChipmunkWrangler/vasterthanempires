@@ -28,7 +28,9 @@ public class Player : NetworkBehaviour {
 	[SerializeField] Color selectedColor = Color.yellow;
 	[SerializeField] Color originalColor;
 	[SerializeField] Color enemyColor;
-	[SerializeField] DecreeCapsule decreePrefab;
+	[SerializeField] SendDronesDecree sendDronesDecreePrefab;
+	[SerializeField] DecreeCapsule decreeCapsulePrefab;
+
 
 	public bool selected { get; private set; }
 
@@ -42,17 +44,15 @@ public class Player : NetworkBehaviour {
 		// todo: feedback that click was registered
 	}
 
-	public void SendDrones(Planet origin, Planet destination) {
-		DecreeCapsule decreeCapsule = (DecreeCapsule)GameObject.Instantiate (decreePrefab);
-		decreeCapsule.transform.position = GetActualPosition();
-		decreeCapsule.Init (origin.transform.position);
-		CmdSendDrones (decreeCapsule.transform.position, origin.netId, destination.netId);
+	public void SendDrones(Planet origin, Planet destination) {		
+		SendDecreeCapsule (origin.transform.position);
+		CmdSendDrones (this.netId, origin.netId, destination.netId);
 	}
 
 	public Vector3 GetActualPosition() {
 		return GetPositionAt (VTEUtil.GetTime ()).Value;
 	}
-		
+
 	void Start() {
 		material = GetComponent<MeshRenderer> ().material;
 		if (!isLocalPlayer) {
@@ -70,7 +70,7 @@ public class Player : NetworkBehaviour {
 			CheckForArrival ();
 		}
 		if (isClient) {
-			UpdateApparentPosition ();
+			transform.position = (isLocalPlayer) ? GetActualPosition() : GetApparentPosition ();
 		}
 	}
 
@@ -124,40 +124,8 @@ public class Player : NetworkBehaviour {
 	}
 
 
-	[Command] void CmdSetTargetPlanet(NetworkInstanceId planetId) {
-		print ("CmdSetTgtPlanet " + this.netId + " to planet " + planetId);
-		RpcStartMovement (planetId, GetActualPosition());
-	}
-		
-	[Command] void CmdSendDrones(Vector3 startPos, NetworkInstanceId originPlanetId, NetworkInstanceId targetPlanetId) {
-		print ("CmdSendDrones from " + originPlanetId + " to " + targetPlanetId + " / " + startPos);
-		StartCoroutine(Decree.Send("SendDrones", startPos, GetPlanetFromId(originPlanetId), GetPlanetFromId(targetPlanetId)));
-	}
-
-	[ClientRpc] void RpcStartMovement(NetworkInstanceId planetId, Vector3 startPos) { // don't rely on actualPosition being synched at exactly this moment
-		print ("RpcStartMovement ");
-		Planet tgtPlanet = GetPlanetFromId (planetId);
-		Vector3 tgtPos = tgtPlanet.GetParkingSpace (this.netId);
-		AddMovementEvent(startPos, tgtPos, tgtPlanet); 
-		UpdateColor ();
-	}
-
-	[ClientRpc] void RpcEndMovement(int i) {
-		MovementEvent movementEvent = movementEvents [i];
-		print ("Arrive at " + VTEUtil.GetTime() + " after " + (VTEUtil.GetTime() - movementEvent.time));
-		print ("Completing movement " + i.ToString () + " : " + movementEvent.ToString ());
-		movementEvent.done = true;
-		movementEvent.tgtPlanet.Conquer (this.netId);
-		UpdateColor ();
-	}
-		
-	Planet GetPlanetFromId(NetworkInstanceId planetId) {
-		Assert.IsTrue (isClient);
-		return ClientScene.FindLocalObject (planetId).GetComponent<Planet> ();
-	}
-
-	void UpdateApparentPosition() {		
-//		print("UpdateApparentPosition");
+	Vector3 GetApparentPosition() {		
+		//		print("UpdateApparentPosition");
 		float time = 0;
 		for (int i = GetCurrentMovementEventIdx(); i >= 0; --i) {
 			MovementEvent movementEvent = movementEvents [i];
@@ -169,8 +137,8 @@ public class Player : NetworkBehaviour {
 			}
 		}
 		Vector3? newPosition = GetPositionAt (time);
-		transform.position = newPosition.HasValue ? newPosition.Value : VTEUtil.OFFSCREEN;
-//		print ("Apparent pos " + transform.position.ToString() + " Actual pos " + actualPosition.ToString());
+		return newPosition.HasValue ? newPosition.Value : VTEUtil.OFFSCREEN;
+		//		print ("Apparent pos " + transform.position.ToString() + " Actual pos " + actualPosition.ToString());
 	}
 
 	Vector3? GetPositionAt(float time) {
@@ -183,9 +151,9 @@ public class Player : NetworkBehaviour {
 		}
 		float timeRequired = Vector3.Distance(lastDeparture.startPos, lastDeparture.tgtPos) / unitsPerSec;
 		float fractionCompleted = (time - lastDeparture.time) / timeRequired;
-//		print (lastDeparture);
-//		print("Apparent Time" + time.ToString() + " Actual time " + VTEUtil.GetTime() );
-//		print ("Fraction completed = " + fractionCompleted);
+		//		print (lastDeparture);
+		//		print("Apparent Time" + time.ToString() + " Actual time " + VTEUtil.GetTime() );
+		//		print ("Fraction completed = " + fractionCompleted);
 		return Vector3.Lerp (lastDeparture.startPos, lastDeparture.tgtPos, fractionCompleted);
 	}
 
@@ -193,6 +161,42 @@ public class Player : NetworkBehaviour {
 		movementEvents.Add (new MovementEvent (startPosition, tgtPosition, tgtPlanet));
 		print ("Creating Movement Event for player " + this.netId.Value.ToString () + " : total = " + movementEvents.Count);
 		print (movementEvents [movementEvents.Count - 1].ToString ());			
+	}
+
+	void SendDecreeCapsule(Vector3 tgtPos) {
+		DecreeCapsule decreeCapsule = (DecreeCapsule)GameObject.Instantiate (decreeCapsulePrefab);
+		decreeCapsule.GoTo (GetActualPosition(), tgtPos);
+	}
+
+	[Command] void CmdSetTargetPlanet(NetworkInstanceId planetId) {
+		print ("CmdSetTgtPlanet " + this.netId + " to planet " + planetId);
+		RpcStartMovement (planetId, GetActualPosition());
+	}
+		
+	[Command] void CmdSendDrones(NetworkInstanceId commanderId, NetworkInstanceId originPlanetId, NetworkInstanceId targetPlanetId) {
+		print ("CmdSendDrones from " + originPlanetId + " to " + targetPlanetId + " / " + GetActualPosition ());
+		SendDronesDecree decree = (SendDronesDecree)GameObject.Instantiate(sendDronesDecreePrefab);
+		Planet origin = NetworkServer.FindLocalObject (originPlanetId).GetComponent<Planet> ();
+		Planet target = NetworkServer.FindLocalObject (targetPlanetId).GetComponent<Planet> ();
+		Player commander = NetworkServer.FindLocalObject (commanderId).GetComponent<Player>();
+		decree.Send (commander, origin, target);
+	}
+
+	[ClientRpc] void RpcStartMovement(NetworkInstanceId planetId, Vector3 startPos) { // don't rely on actualPosition being synched at exactly this moment
+		print ("RpcStartMovement ");
+		Planet tgtPlanet = ClientScene.FindLocalObject (planetId).GetComponent<Planet> ();
+		Vector3 tgtPos = tgtPlanet.GetParkingSpace (this.netId);
+		AddMovementEvent(startPos, tgtPos, tgtPlanet); 
+		UpdateColor ();
+	}
+
+	[ClientRpc] void RpcEndMovement(int i) {
+		MovementEvent movementEvent = movementEvents [i];
+		print ("Arrive at " + VTEUtil.GetTime() + " after " + (VTEUtil.GetTime() - movementEvent.time));
+		print ("Completing movement " + i.ToString () + " : " + movementEvent.ToString ());
+		movementEvent.done = true;
+		movementEvent.tgtPlanet.Conquer (this.netId);
+		UpdateColor ();
 	}
 
 }

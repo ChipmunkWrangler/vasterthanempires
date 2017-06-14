@@ -1,17 +1,23 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class Decree {
-	public static IEnumerator Send(string decreeType, Vector3 startPos, Planet originPlanet, Planet targetPlanet) {
-		Debug.Log ("Send decree " + decreeType + " from " + originPlanet.netId + " to " + targetPlanet.netId + " at " + VTEUtil.GetTime());
+public abstract class Decree : NetworkBehaviour {
+	protected abstract void Execute ();
 
-		float travelTime = Vector2.Distance(startPos, originPlanet.transform.position) / DecreeCapsule.unitsPerSec;
-		yield return new WaitForSeconds (travelTime);
-		Execute (decreeType, originPlanet, targetPlanet);
+	protected void Send(Player commander, Planet origin) {
+		StartCoroutine(ExecuteDelayed(commander, origin));
 	}
 
-	static void Execute(string decreeType, Planet origin, Planet target) {
-		Debug.Log ("Executing " + decreeType + " from " + origin.netId + " to " + target.netId + " at " + VTEUtil.GetTime());
+	IEnumerator ExecuteDelayed(NetworkBehaviour commander, Planet planet) {
+		Vector3 startPos = commander.transform.position;
+		Vector3 tgtPos = planet.transform.position;
+		float travelTime = Vector2.Distance(startPos, tgtPos) / DecreeCapsule.unitsPerSec;
+		yield return new WaitForSeconds (travelTime);
+//		if (planet.GetOwnerIdAt(VTEUtil.GetTime()) == commander.netId) {
+			Execute();
+//		}
+		Destroy (gameObject);
 	}
 }
