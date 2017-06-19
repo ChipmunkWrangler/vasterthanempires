@@ -7,6 +7,8 @@ using UnityEngine.Networking;
 
 public class GameOverController : NetworkBehaviour {
 	[SerializeField] Text gameOverText;
+	[SerializeField] Color ownColor;
+	[SerializeField] Color enemyColor;
 
 	void Start() {
 		Planet.OnPlanetConquered += CheckGameOver;
@@ -32,6 +34,6 @@ public class GameOverController : NetworkBehaviour {
 		UnityEngine.Assertions.Assert.IsTrue (isClient);
 		bool youWin = winnerId == VTEUtil.GetLocalPlayerComponent<NetworkBehaviour> ().netId;
 		gameOverText.text = youWin ? "You win!" : "You lose!";
-		gameOverText.color = youWin ? Color.green : Color.red;
+		gameOverText.color = youWin ? ownColor : enemyColor;
 	}
 }

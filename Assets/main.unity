@@ -633,6 +633,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameOverText: {fileID: 2130560113}
+  ownColor: {r: 0, g: 0.8352941, b: 1, a: 0}
+  enemyColor: {r: 0.67058825, g: 0, b: 0, a: 0}
 --- !u!4 &647924302
 Transform:
   m_ObjectHideFlags: 0

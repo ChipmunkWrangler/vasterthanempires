@@ -157,8 +157,8 @@ MonoBehaviour:
   resourceDisplay: {fileID: 0}
   secsPerDisplayUpdate: 1
   maxDist: 10.2
-  playerColor: {r: 0, g: 0.7372549, b: 0.003921569, a: 1}
-  enemyColor: {r: 1, g: 0, b: 0, a: 1}
+  playerColor: {r: 0, g: 0.8352941, b: 1, a: 0}
+  enemyColor: {r: 0.67058825, g: 0, b: 0, a: 0}
   selection: {fileID: 0}
 --- !u!114 &114238847611339098
 MonoBehaviour:
