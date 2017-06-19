@@ -19,9 +19,19 @@ public class Planet : NetworkBehaviour {
 	Color neutralColor;
 	DroneEvent initialEvent;
 
-	[ClientRpc] public void RpcConquer(NetworkInstanceId conquerorId, int newNumDrones) {
+	public delegate void PlanetConquered ();
+	public static event PlanetConquered OnPlanetConquered;
+
+	public void Conquer(NetworkInstanceId conquerorId, int newNumDrones) {
+		RpcConquer (conquerorId, newNumDrones);
+	}
+
+	[ClientRpc] void RpcConquer(NetworkInstanceId conquerorId, int newNumDrones) {
 		print ("Be conquered by " + conquerorId);
 		droneEvents.Add(new DroneEvent(conquerorId, newNumDrones));
+		if (OnPlanetConquered != null) {
+			OnPlanetConquered ();
+		}
 	}
 
 	public Vector3 GetParkingSpace(NetworkInstanceId shipId) {
@@ -105,7 +115,7 @@ public class Planet : NetworkBehaviour {
 	}
 
 	DroneEvent GetLastConquestEventBefore(float time) {
-		DroneEvent ce = droneEvents.FindLast( conquestEvent => conquestEvent.time < time);
+		DroneEvent ce = droneEvents.FindLast( conquestEvent => conquestEvent.time <= time);
 		if (ce == null) {
 			ce = initialEvent;
 		}

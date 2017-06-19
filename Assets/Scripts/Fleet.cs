@@ -47,7 +47,7 @@ public class Fleet : NetworkBehaviour {
 		if (planet.GetOwnerIdAt (VTEUtil.GetTime ()) == lastDroneChange.ownerId) {
 			planet.RpcAddDrones (lastDroneChange.numDrones);
 		} else if (planet.GetNumDrones () < lastDroneChange.numDrones) {
-			planet.RpcConquer (lastDroneChange.ownerId, lastDroneChange.numDrones - planet.GetNumDrones ());
+			planet.Conquer (lastDroneChange.ownerId, lastDroneChange.numDrones - planet.GetNumDrones ());
 		} else {
 			planet.RpcAddDrones (-lastDroneChange.numDrones);
 		}

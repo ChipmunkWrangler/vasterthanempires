@@ -57,7 +57,7 @@ public class Player : NetworkBehaviour {
 
 	void OnArrivedAtPlanet(Planet planet) {
 		if (planet.GetOwnerIdAt (VTEUtil.GetTime ()) == NetworkInstanceId.Invalid) {
-			planet.RpcConquer (netId, 0);
+			planet.Conquer (netId, 0);
 		}
 	}
 
