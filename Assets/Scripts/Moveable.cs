@@ -51,7 +51,7 @@ public class Moveable : NetworkBehaviour {
 	void CheckForArrival() {
 		Assert.IsTrue (isServer);
 		if (IsMoving () && GetActualPosition () == GetTgtPos ()) { 
-			RpcEndMovement (GetCurrentMovementEventIdx ());
+			EndMovement (GetCurrentMovementEventIdx ());
 		}
 	}
 
@@ -101,19 +101,23 @@ public class Moveable : NetworkBehaviour {
 		}
 	}
 		
-	Vector3 GetApparentPosition() {		
-		//		print("UpdateApparentPosition");
+	public float GetApparentTime() {
 		float time = 0;
 		for (int i = GetCurrentMovementEventIdx(); i >= 0; --i) {
 			MovementEvent movementEvent = movementEvents [i];
 			time = VTEUtil.GetApparentTime (movementEvent.startPos, movementEvent.tgtPos, movementEvent.time, unitsPerSec, VTEUtil.GetLocalPlayerComponent<Moveable> ().GetActualPosition ());
 			if (time >= 0) {
 				break;
-			} else {
-				print ("Going back " + (1 + GetCurrentMovementEventIdx () - i).ToString ());
-			}
+			}// else {
+//				print ("Going back " + (1 + GetCurrentMovementEventIdx () - i).ToString ());
+//			}
 		}
-		Vector3? newPosition = GetPositionAt (time);
+		return time;
+	}
+
+	Vector3 GetApparentPosition() {		
+		//		print("UpdateApparentPosition");
+		Vector3? newPosition = GetPositionAt (GetApparentTime());
 		return newPosition.HasValue ? newPosition.Value : VTEUtil.OFFSCREEN;
 		//		print ("Apparent pos " + transform.position.ToString() + " Actual pos " + actualPosition.ToString());
 	}
@@ -151,8 +155,17 @@ public class Moveable : NetworkBehaviour {
 
 	bool IsControlledByLocalPlayer() {
 		return VTEUtil.GetLocalPlayerComponent<NetworkBehaviour> ().netId == commanderId;
+	}		
+
+	void EndMovement(int i) {
+		MovementEvent movementEvent = movementEvents [i];
+		print ("Arrive at " + VTEUtil.GetTime() + " after " + (VTEUtil.GetTime() - movementEvent.time));
+		print ("Completing movement " + i.ToString () + " : " + movementEvent.ToString ());
+		movementEvent.done = true;
+		gameObject.SendMessage ("OnArrivedAtPlanet", movementEvent.tgtPlanet);
+		RpcEndMovement(i);
 	}
-		
+
 	[Command] void CmdSetTargetPlanet(NetworkInstanceId planetId) {
 		print ("CmdSetTgtPlanet: ship " + this.netId + " to planet " + planetId);
 		RpcStartMovement (planetId, GetActualPosition());
@@ -168,10 +181,7 @@ public class Moveable : NetworkBehaviour {
 
 	[ClientRpc] void RpcEndMovement(int i) {
 		MovementEvent movementEvent = movementEvents [i];
-		print ("Arrive at " + VTEUtil.GetTime() + " after " + (VTEUtil.GetTime() - movementEvent.time));
-		print ("Completing movement " + i.ToString () + " : " + movementEvent.ToString ());
 		movementEvent.done = true;
-		movementEvent.tgtPlanet.Conquer (commanderId);
 		UpdateColor ();
 	}
 

@@ -6,17 +6,6 @@ using UnityEngine.Networking;
 using UnityEngine.Assertions;
 
 public class Planet : NetworkBehaviour {
-	class DroneEvent {
-		public NetworkInstanceId ownerId { get; private set; }
-		public float time { get; private set; }
-		public int numDrones { get; private set; }
-		public DroneEvent(NetworkInstanceId _ownerId, int newNumDrones) { 
-			ownerId = _ownerId;
-			numDrones = newNumDrones;
-			time = VTEUtil.GetTime();
-		}
-	}
-
 	[SerializeField] float secsPerDrone = 1f;
 	[SerializeField] Text resourceDisplay;
 	[SerializeField] float secsPerDisplayUpdate = 1f;
@@ -30,8 +19,9 @@ public class Planet : NetworkBehaviour {
 	Color neutralColor;
 	DroneEvent initialEvent;
 
-	public void Conquer(NetworkInstanceId conquerorId) {
-		droneEvents.Add(new DroneEvent(conquerorId, 0));
+	[ClientRpc] public void RpcConquer(NetworkInstanceId conquerorId, int newNumDrones) {
+		print ("Be conquered by " + conquerorId);
+		droneEvents.Add(new DroneEvent(conquerorId, newNumDrones));
 	}
 
 	public Vector3 GetParkingSpace(NetworkInstanceId shipId) {
@@ -105,11 +95,11 @@ public class Planet : NetworkBehaviour {
 	}
 		
 	int GetDronesAt(float time) {
-		int numDrones = 0;
 		DroneEvent lastConquest = GetLastConquestEventBefore (time);
+		int numDrones = lastConquest.numDrones;
 		if (lastConquest.ownerId != NetworkInstanceId.Invalid) {
 			float timeSinceLastConquest = time - lastConquest.time;
-			numDrones = Mathf.FloorToInt (timeSinceLastConquest / secsPerDrone);
+			numDrones += Mathf.FloorToInt (timeSinceLastConquest / secsPerDrone);
 		}
 		return numDrones;
 	}

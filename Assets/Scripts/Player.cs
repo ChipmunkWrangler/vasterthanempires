@@ -54,4 +54,11 @@ public class Player : NetworkBehaviour {
 		Player commander = NetworkServer.FindLocalObject (commanderId).GetComponent<Player>();
 		decree.Send (commander, origin, target);
 	}
+
+	void OnArrivedAtPlanet(Planet planet) {
+		if (planet.GetOwnerIdAt (VTEUtil.GetTime ()) == NetworkInstanceId.Invalid) {
+			planet.RpcConquer (netId, 0);
+		}
+	}
+
 }
